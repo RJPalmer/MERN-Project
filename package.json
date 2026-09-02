@@ -1,0 +1,26 @@
+{
+  "name": "mern-project",
+  "version": "1.0.0",
+  "description": "Multi-vendor B2B and B2C marketplace platform built with the MERN stack.",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "keywords": [
+    "marketplace",
+    "multi-vendor",
+    "b2b",
+    "b2c",
+    "mern",
+    "ecommerce",
+    "react",
+    "express",
+    "mongodb"
+  ],
+  "license": "ISC",
+  "author": "Robert Palmer",
+  "scripts": {
+    "test": "echo \"No tests configured yet\""
+  }
+}
