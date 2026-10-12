@@ -7,6 +7,7 @@ const env = require('./config/env');
 const logger = require('./config/logger');
 const { getMongoStatus } = require('./db/mongo');
 const { getRedisStatus } = require('./db/redis');
+const authRoutes = require('./modules/auth/auth.routes');
 
 const app = express();
 
@@ -16,6 +17,8 @@ app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 app.use(pinoHttp({ logger }));
+
+app.use('/api/v1/auth', authRoutes);
 
 app.get('/api/v1/health', (req, res) => {
   const dependencies = {
@@ -42,6 +45,7 @@ app.use((error, req, res, next) => {
     error: {
       code: error.code || 'INTERNAL_SERVER_ERROR',
       message: env.NODE_ENV === 'production' ? 'An unexpected error occurred' : error.message,
+      ...(error.details ? { details: error.details } : {}),
     },
   });
 });
