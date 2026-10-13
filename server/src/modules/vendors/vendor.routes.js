@@ -2,6 +2,7 @@ const express = require('express');
 const { requireAuth } = require('../auth/auth.middleware');
 const { createVendorSchema } = require('./vendor.schemas');
 const catalogRoutes = require('../catalog/catalog.routes');
+const inventoryRoutes = require('../inventory/inventory.routes');
 const { requireVendorOwner } = require('./vendor.middleware');
 const vendorService = require('./vendor.service');
 
@@ -22,6 +23,7 @@ function validateCreateVendor(body) {
 router.use(requireAuth);
 
 router.use('/:vendorId/products', catalogRoutes);
+router.use('/:vendorId/inventory', inventoryRoutes);
 
 router.post('/', async (req, res) => {
   const input = validateCreateVendor(req.body);
@@ -35,7 +37,7 @@ router.get('/mine', async (req, res) => {
 });
 
 router.post('/:vendorId/submit', requireVendorOwner, async (req, res) => {
-  const vendor = await vendorService.submitVendorForReview(req.params.vendorId);
+  const vendor = await vendorService.submitVendorForReview(req.params.vendorId, req.authUser.id);
   return res.json({ vendor });
 });
 

@@ -7,7 +7,10 @@ mongoose.connection.on('error', (error) => {
 });
 
 async function connectMongo() {
-  await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
+  await mongoose.connect(env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000,
+    replicaSet: 'rs0',
+  });
   logger.info('Connected to MongoDB');
 }
 

@@ -19,6 +19,7 @@ function presentVendor(vendor, role) {
     status: vendor.status,
     contact: vendor.contact,
     review: vendor.review,
+    reviewHistory: vendor.reviewHistory,
     createdAt: vendor.createdAt,
     role,
   };
@@ -60,15 +61,25 @@ async function listMyVendors(userId) {
     .map((membership) => presentVendor(membership.vendorId, membership.role));
 }
 
-async function submitVendorForReview(vendorId) {
+async function submitVendorForReview(vendorId, actorId) {
   const vendor = await Vendor.findOneAndUpdate(
     { _id: vendorId, status: { $in: ['draft', 'rejected'] } },
-    { $set: {
-      status: 'pending_review',
-      'review.reviewedBy': null,
-      'review.reviewedAt': null,
-      'review.rejectionReason': '',
-    } },
+    {
+      $set: {
+        status: 'pending_review',
+        'review.reviewedBy': null,
+        'review.reviewedAt': null,
+        'review.rejectionReason': '',
+      },
+      $push: {
+        reviewHistory: {
+          action: 'submitted',
+          actorId,
+          reason: '',
+          occurredAt: new Date(),
+        },
+      },
+    },
     { new: true, runValidators: true },
   );
   if (!vendor) {

@@ -21,6 +21,10 @@ const productVariantSchema = new mongoose.Schema({
     list: { type: moneySchema, required: true },
     sale: { type: moneySchema, default: undefined },
   },
+  inventory: {
+    available: { type: Number, default: 0, min: 0 },
+    reserved: { type: Number, default: 0, min: 0 },
+  },
   active: { type: Boolean, default: true, required: true },
 }, { timestamps: true });
 

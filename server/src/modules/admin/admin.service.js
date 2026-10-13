@@ -12,20 +12,33 @@ async function listPendingVendors(limit) {
   return Vendor.find({ status: 'pending_review' })
     .sort({ updatedAt: 1 })
     .limit(limit)
-    .select('slug legalName displayName description contact status createdAt updatedAt')
+    .select('slug legalName displayName description contact status reviewHistory createdAt updatedAt')
     .lean();
 }
 
 async function reviewVendor(vendorId, reviewerId, decision) {
+  const action = decision.status === 'active' ? 'approved' : 'rejected';
+  const reason = decision.status === 'rejected' ? decision.reason : '';
+  const reviewedAt = new Date();
   const vendor = await Vendor.findOneAndUpdate(
     { _id: vendorId, status: 'pending_review' },
-    { $set: {
-      status: decision.status,
-      'review.reviewedBy': reviewerId,
-      'review.reviewedAt': new Date(),
-      'review.rejectionReason': decision.status === 'rejected' ? decision.reason : '',
-      'settings.visible': decision.status === 'active',
-    } },
+    {
+      $set: {
+        status: decision.status,
+        'review.reviewedBy': reviewerId,
+        'review.reviewedAt': reviewedAt,
+        'review.rejectionReason': reason,
+        'settings.visible': decision.status === 'active',
+      },
+      $push: {
+        reviewHistory: {
+          action,
+          actorId: reviewerId,
+          reason,
+          occurredAt: reviewedAt,
+        },
+      },
+    },
     { new: true, runValidators: true },
   );
   if (!vendor) {
@@ -39,6 +52,7 @@ async function reviewVendor(vendorId, reviewerId, decision) {
     status: vendor.status,
     visible: vendor.settings.visible,
     review: vendor.review,
+    reviewHistory: vendor.reviewHistory,
   };
 }
 

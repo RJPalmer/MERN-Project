@@ -1,5 +1,12 @@
 const mongoose = require('mongoose');
 
+const reviewHistoryEntrySchema = new mongoose.Schema({
+  action: { type: String, enum: ['submitted', 'approved', 'rejected'], required: true },
+  actorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  reason: { type: String, trim: true, maxlength: 1000, default: '' },
+  occurredAt: { type: Date, required: true, default: Date.now },
+});
+
 const vendorSchema = new mongoose.Schema({
   slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
   legalName: { type: String, required: true, trim: true, maxlength: 160 },
@@ -20,6 +27,7 @@ const vendorSchema = new mongoose.Schema({
     reviewedAt: { type: Date, default: null },
     rejectionReason: { type: String, trim: true, maxlength: 1000, default: '' },
   },
+  reviewHistory: { type: [reviewHistoryEntrySchema], default: [] },
   settings: {
     fulfillmentLeadDays: { type: Number, min: 0, default: 2 },
     allowBackorders: { type: Boolean, default: false },
