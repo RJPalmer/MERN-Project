@@ -11,6 +11,7 @@ const authRoutes = require('./modules/auth/auth.routes');
 const vendorRoutes = require('./modules/vendors/vendor.routes');
 const adminRoutes = require('./modules/admin/admin.routes');
 const storefrontRoutes = require('./modules/catalog/storefront.routes');
+const cartRoutes = require('./modules/cart/cart.routes');
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/vendors', vendorRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/products', storefrontRoutes);
+app.use('/api/v1/cart', cartRoutes);
 
 app.get('/api/v1/health', (req, res) => {
   const dependencies = {
