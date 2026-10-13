@@ -16,6 +16,12 @@ const userSchema = new mongoose.Schema({
     default: 'active',
     required: true,
   },
+  platformRole: {
+    type: String,
+    enum: ['customer', 'support', 'admin'],
+    default: 'customer',
+    required: true,
+  },
   emailVerifiedAt: { type: Date, default: null },
   lastLoginAt: { type: Date, default: null },
   auth: {

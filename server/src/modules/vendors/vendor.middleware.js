@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const VendorMember = require('../../models/VendorMember');
 
-async function requireVendorManager(req, res, next) {
+function requireVendorRole(allowedRoles) {
+  return async function checkVendorRole(req, res, next) {
   const { vendorId } = req.params;
   if (!mongoose.isValidObjectId(vendorId)) {
     return res.status(404).json({ error: { code: 'VENDOR_NOT_FOUND', message: 'Vendor not found' } });
@@ -12,7 +13,7 @@ async function requireVendorManager(req, res, next) {
       vendorId,
       userId: req.authUser.id,
       status: 'active',
-      role: { $in: ['owner', 'manager'] },
+      role: { $in: allowedRoles },
     }).populate({ path: 'vendorId', select: 'status' });
 
     if (!membership?.vendorId || membership.vendorId.status === 'suspended') {
@@ -24,6 +25,10 @@ async function requireVendorManager(req, res, next) {
   } catch (error) {
     return next(error);
   }
+  };
 }
 
-module.exports = { requireVendorManager };
+const requireVendorManager = requireVendorRole(['owner', 'manager']);
+const requireVendorOwner = requireVendorRole(['owner']);
+
+module.exports = { requireVendorManager, requireVendorOwner };

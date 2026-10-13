@@ -2,6 +2,7 @@ const express = require('express');
 const { requireAuth } = require('../auth/auth.middleware');
 const { createVendorSchema } = require('./vendor.schemas');
 const catalogRoutes = require('../catalog/catalog.routes');
+const { requireVendorOwner } = require('./vendor.middleware');
 const vendorService = require('./vendor.service');
 
 const router = express.Router();
@@ -31,6 +32,11 @@ router.post('/', async (req, res) => {
 router.get('/mine', async (req, res) => {
   const vendors = await vendorService.listMyVendors(req.authUser.id);
   return res.json({ vendors });
+});
+
+router.post('/:vendorId/submit', requireVendorOwner, async (req, res) => {
+  const vendor = await vendorService.submitVendorForReview(req.params.vendorId);
+  return res.json({ vendor });
 });
 
 module.exports = router;

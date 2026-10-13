@@ -18,6 +18,7 @@ function presentVendor(vendor, role) {
     description: vendor.description,
     status: vendor.status,
     contact: vendor.contact,
+    review: vendor.review,
     createdAt: vendor.createdAt,
     role,
   };
@@ -59,4 +60,21 @@ async function listMyVendors(userId) {
     .map((membership) => presentVendor(membership.vendorId, membership.role));
 }
 
-module.exports = { VendorError, createVendor, listMyVendors };
+async function submitVendorForReview(vendorId) {
+  const vendor = await Vendor.findOneAndUpdate(
+    { _id: vendorId, status: { $in: ['draft', 'rejected'] } },
+    { $set: {
+      status: 'pending_review',
+      'review.reviewedBy': null,
+      'review.reviewedAt': null,
+      'review.rejectionReason': '',
+    } },
+    { new: true, runValidators: true },
+  );
+  if (!vendor) {
+    throw new VendorError(409, 'VENDOR_NOT_SUBMITTABLE', 'Vendor must be a draft or rejected profile to submit for review');
+  }
+  return presentVendor(vendor, 'owner');
+}
+
+module.exports = { VendorError, createVendor, listMyVendors, submitVendorForReview };

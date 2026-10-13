@@ -47,6 +47,7 @@ function publicUser(user) {
     email: user.email,
     displayName: user.displayName,
     status: user.status,
+    platformRole: user.platformRole,
     emailVerifiedAt: user.emailVerifiedAt,
   };
 }

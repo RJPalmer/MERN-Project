@@ -15,6 +15,11 @@ const vendorSchema = new mongoose.Schema({
     email: { type: String, required: true, lowercase: true, trim: true },
     phone: { type: String, trim: true, default: '' },
   },
+  review: {
+    reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    reviewedAt: { type: Date, default: null },
+    rejectionReason: { type: String, trim: true, maxlength: 1000, default: '' },
+  },
   settings: {
     fulfillmentLeadDays: { type: Number, min: 0, default: 2 },
     allowBackorders: { type: Boolean, default: false },
