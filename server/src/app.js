@@ -10,6 +10,7 @@ const { getRedisStatus } = require('./db/redis');
 const authRoutes = require('./modules/auth/auth.routes');
 const vendorRoutes = require('./modules/vendors/vendor.routes');
 const adminRoutes = require('./modules/admin/admin.routes');
+const storefrontRoutes = require('./modules/catalog/storefront.routes');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(pinoHttp({ logger }));
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/vendors', vendorRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/products', storefrontRoutes);
 
 app.get('/api/v1/health', (req, res) => {
   const dependencies = {

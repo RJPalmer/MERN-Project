@@ -18,6 +18,13 @@ const optionSchema = new mongoose.Schema({
   values: { type: [String], required: true },
 }, { _id: false });
 
+const reviewHistoryEntrySchema = new mongoose.Schema({
+  action: { type: String, enum: ['submitted', 'approved', 'rejected'], required: true },
+  actorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  reason: { type: String, trim: true, maxlength: 1000, default: '' },
+  occurredAt: { type: Date, required: true, default: Date.now },
+});
+
 const productSchema = new mongoose.Schema({
   vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: true },
   slug: { type: String, required: true, lowercase: true, trim: true },
@@ -25,7 +32,14 @@ const productSchema = new mongoose.Schema({
   shortDescription: { type: String, trim: true, maxlength: 300, default: '' },
   description: { type: String, trim: true, maxlength: 10000, default: '' },
   brand: { type: String, trim: true, maxlength: 100, default: '' },
-  status: { type: String, enum: ['draft', 'pending_review', 'active', 'archived'], default: 'draft', required: true },
+  status: { type: String, enum: ['draft', 'pending_review', 'active', 'rejected', 'archived'], default: 'draft', required: true },
+  review: {
+    reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    reviewedAt: { type: Date, default: null },
+    rejectionReason: { type: String, trim: true, maxlength: 1000, default: '' },
+  },
+  reviewHistory: { type: [reviewHistoryEntrySchema], default: [] },
+  publishedAt: { type: Date, default: null },
   media: { type: [mediaSchema], default: [] },
   attributes: { type: [attributeSchema], default: [] },
   options: { type: [optionSchema], default: [] },

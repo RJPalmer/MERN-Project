@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const { requireAuth } = require('../auth/auth.middleware');
 const { requireAdmin } = require('./admin.middleware');
-const { parseReviewVendor } = require('./admin.schemas');
+const { parseReviewProduct, parseReviewVendor } = require('./admin.schemas');
 const adminService = require('./admin.service');
 
 const router = express.Router();
@@ -15,6 +15,13 @@ router.get('/vendors/pending', async (req, res) => {
   return res.json({ vendors });
 });
 
+router.get('/products/pending', async (req, res) => {
+  const requestedLimit = Number.parseInt(req.query.limit, 10);
+  const limit = Number.isInteger(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 100) : 50;
+  const products = await adminService.listPendingProducts(limit);
+  return res.json({ products });
+});
+
 router.patch('/vendors/:vendorId/review', async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.vendorId)) {
     return res.status(404).json({ error: { code: 'VENDOR_NOT_FOUND', message: 'Vendor not found' } });
@@ -22,6 +29,15 @@ router.patch('/vendors/:vendorId/review', async (req, res) => {
   const decision = parseReviewVendor(req.body);
   const vendor = await adminService.reviewVendor(req.params.vendorId, req.authUser.id, decision);
   return res.json({ vendor });
+});
+
+router.patch('/products/:productId/review', async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.productId)) {
+    return res.status(404).json({ error: { code: 'PRODUCT_NOT_FOUND', message: 'Product not found' } });
+  }
+  const decision = parseReviewProduct(req.body);
+  const product = await adminService.reviewProduct(req.params.productId, req.authUser.id, decision);
+  return res.json({ product });
 });
 
 module.exports = router;
