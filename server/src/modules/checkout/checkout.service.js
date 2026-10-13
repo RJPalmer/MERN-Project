@@ -1,4 +1,5 @@
 const Cart = require('../../models/Cart');
+const CustomerAddress = require('../../models/CustomerAddress');
 const InventoryItem = require('../../models/InventoryItem');
 const ProductVariant = require('../../models/ProductVariant');
 
@@ -14,10 +15,17 @@ function money(amount, currency) {
   return { amount, currency };
 }
 
-async function createCheckoutQuote(customerId) {
+async function createCheckoutQuote(customerId, addressId) {
   const cart = await Cart.findOne({ customerId }).lean();
   if (!cart || cart.items.length === 0) {
     throw new CheckoutError(400, 'CART_EMPTY', 'Add items to the cart before requesting a checkout quote');
+  }
+
+  const shippingAddress = addressId
+    ? await CustomerAddress.findOne({ _id: addressId, customerId }).lean()
+    : await CustomerAddress.findOne({ customerId, isDefaultShipping: true }).lean();
+  if (addressId && !shippingAddress) {
+    throw new CheckoutError(404, 'ADDRESS_NOT_FOUND', 'Shipping address not found');
   }
 
   const variantIds = cart.items.map((item) => item.variantId);
@@ -36,6 +44,9 @@ async function createCheckoutQuote(customerId) {
   const inventoryByVariantId = new Map(inventoryItems.map((item) => [item.variantId.toString(), item]));
   const vendorGroups = new Map();
   const blockers = [
+    ...(!shippingAddress
+      ? [{ code: 'SHIPPING_ADDRESS_REQUIRED', message: 'Add or select a shipping address to continue' }]
+      : []),
     { code: 'SHIPPING_NOT_CONFIGURED', message: 'Shipping rates are not configured yet' },
     { code: 'TAX_NOT_CONFIGURED', message: 'Tax calculation is not configured yet' },
     { code: 'PAYMENTS_NOT_CONFIGURED', message: 'Payment processing is not configured yet' },
@@ -122,6 +133,16 @@ async function createCheckoutQuote(customerId) {
       type: 'merchandise_preview',
       createdAt: new Date().toISOString(),
       currency: quoteCurrency,
+      shippingAddress: shippingAddress ? {
+        id: shippingAddress._id,
+        recipientName: shippingAddress.recipientName,
+        addressLine1: shippingAddress.addressLine1,
+        addressLine2: shippingAddress.addressLine2,
+        city: shippingAddress.city,
+        region: shippingAddress.region,
+        postalCode: shippingAddress.postalCode,
+        countryCode: shippingAddress.countryCode,
+      } : null,
       vendors,
       subtotal: money(subtotalAmount, quoteCurrency),
       discount: money(0, quoteCurrency),
