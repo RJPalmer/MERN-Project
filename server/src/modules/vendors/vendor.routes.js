@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireAuth } = require('../auth/auth.middleware');
 const { createVendorSchema } = require('./vendor.schemas');
+const catalogRoutes = require('../catalog/catalog.routes');
 const vendorService = require('./vendor.service');
 
 const router = express.Router();
@@ -18,6 +19,8 @@ function validateCreateVendor(body) {
 }
 
 router.use(requireAuth);
+
+router.use('/:vendorId/products', catalogRoutes);
 
 router.post('/', async (req, res) => {
   const input = validateCreateVendor(req.body);
