@@ -412,6 +412,25 @@ Deploy the stateless React app to a CDN and the API/workers as separate containe
 
 Authentication, vendor onboarding/admin approval, catalog/variants/media, storefront search, cart, a single shipping method, Stripe payment, parent/vendor order split, stock reservation, and basic vendor order management.
 
+#### Next backend milestone: place an order from checkout
+
+The current API can produce a merchandise preview and resolve a customer shipping address. It cannot yet calculate delivery/tax, reserve stock, accept payment, or retain an order. Before implementing order placement, record the launch decisions below; geography, tax responsibility, merchant-of-record, and fulfillment ownership affect the shipping and payment flow.
+
+Implementation checklist:
+
+- [ ] Confirm launch geography, currency, tax responsibility, merchant-of-record, and vendor fulfillment model.
+- [ ] Configure one launch shipping method and define how delivery availability and cost are calculated per vendor.
+- [ ] Integrate tax calculation for the selected launch market and document rounding/inclusive-price behavior.
+- [ ] Recalculate cart prices, address, shipping, tax, and stock on the server when checkout is submitted; reject stale or invalid quotes.
+- [ ] Require an `Idempotency-Key` and persist checkout attempts so retries cannot create duplicate orders or holds.
+- [ ] In a MongoDB transaction, reserve every cart line conditionally, append inventory movements, and create the parent order plus vendor orders with immutable product, price, address, shipping, tax, and commission snapshots.
+- [ ] Add expiring inventory holds and a worker that releases expired holds and updates the inventory ledger.
+- [ ] Create the payment intent only after the order and holds are durable; finalize payment and consume holds only from a verified provider webhook.
+- [ ] Add customer order history/detail and vendor order list/detail endpoints with ownership checks.
+- [ ] Verify competing checkouts cannot oversell, retries are idempotent, and payment failure/timeout releases reserved stock.
+
+Acceptance criteria: a valid checkout creates exactly one parent order and one vendor order per vendor; inventory is reserved atomically; retrying with the same idempotency key returns the existing result; payment status changes only from a verified webhook; and failed or expired payment releases its holds.
+
 ### Phase 2 — operating a marketplace
 
 Vendor teams, inventory locations, shipment tracking, promotions, reviews, refunds/returns, notifications, dashboard rollups, reconciliation/audit screens.
