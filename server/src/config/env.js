@@ -7,6 +7,8 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(5000),
+  INVENTORY_HOLD_POLL_INTERVAL_MS: z.coerce.number().int().min(5000).max(3600000).default(60000),
+  INVENTORY_HOLD_BATCH_SIZE: z.coerce.number().int().min(1).max(1000).default(100),
   MONGODB_URI: z.string().url().default('mongodb://localhost:27017/marketplace'),
   REDIS_URL: z.string().url().default('redis://localhost:6379'),
   CLIENT_URL: z.string().url().default('http://localhost:5173'),

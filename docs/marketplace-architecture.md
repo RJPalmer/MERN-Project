@@ -424,7 +424,7 @@ Implementation checklist:
 - [ ] Recalculate cart prices, address, shipping, tax, and stock on the server when checkout is submitted; reject stale or invalid quotes.
 - [ ] Require an `Idempotency-Key` and persist checkout attempts so retries cannot create duplicate orders or holds.
 - [ ] In a MongoDB transaction, reserve every cart line conditionally, append inventory movements, and create the parent order plus vendor orders with immutable product, price, address, shipping, tax, and commission snapshots.
-- [ ] Add expiring inventory holds and a worker that releases expired holds and updates the inventory ledger.
+- [x] Add expiring inventory holds and a worker that releases expired holds and updates the inventory ledger.
 - [ ] Create the payment intent only after the order and holds are durable; finalize payment and consume holds only from a verified provider webhook.
 - [ ] Add customer order history/detail and vendor order list/detail endpoints with ownership checks.
 - [ ] Verify competing checkouts cannot oversell, retries are idempotent, and payment failure/timeout releases reserved stock.
