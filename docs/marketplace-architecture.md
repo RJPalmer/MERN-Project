@@ -426,7 +426,7 @@ Implementation checklist:
 - [ ] In a MongoDB transaction, reserve every cart line conditionally, append inventory movements, and create the parent order plus vendor orders with immutable product, price, address, shipping, tax, and commission snapshots.
 - [x] Add expiring inventory holds and a worker that releases expired holds and updates the inventory ledger.
 - [ ] Create the payment intent only after the order and holds are durable; finalize payment and consume holds only from a verified provider webhook.
-- [ ] Add customer order history/detail and vendor order list/detail endpoints with ownership checks.
+- [x] Add customer order history/detail and vendor order list/detail endpoints with ownership checks.
 - [ ] Verify competing checkouts cannot oversell, retries are idempotent, and payment failure/timeout releases reserved stock.
 
 Acceptance criteria: a valid checkout creates exactly one parent order and one vendor order per vendor; inventory is reserved atomically; retrying with the same idempotency key returns the existing result; payment status changes only from a verified webhook; and failed or expired payment releases its holds.

@@ -30,5 +30,6 @@ function requireVendorRole(allowedRoles) {
 
 const requireVendorManager = requireVendorRole(['owner', 'manager']);
 const requireVendorOwner = requireVendorRole(['owner']);
+const requireVendorFulfillment = requireVendorRole(['owner', 'manager', 'fulfillment']);
 
-module.exports = { requireVendorManager, requireVendorOwner };
+module.exports = { requireVendorFulfillment, requireVendorManager, requireVendorOwner };

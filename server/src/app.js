@@ -14,6 +14,8 @@ const storefrontRoutes = require('./modules/catalog/storefront.routes');
 const cartRoutes = require('./modules/cart/cart.routes');
 const checkoutRoutes = require('./modules/checkout/checkout.routes');
 const addressRoutes = require('./modules/addresses/address.routes');
+const customerOrderRoutes = require('./modules/orders/customer.routes');
+const vendorOrderRoutes = require('./modules/orders/vendor.routes');
 
 const app = express();
 
@@ -31,6 +33,8 @@ app.use('/api/v1/products', storefrontRoutes);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/checkout', checkoutRoutes);
 app.use('/api/v1/me/addresses', addressRoutes);
+app.use('/api/v1/me/orders', customerOrderRoutes);
+app.use('/api/v1/vendors/:vendorId/orders', vendorOrderRoutes);
 
 app.get('/api/v1/health', (req, res) => {
   const dependencies = {
