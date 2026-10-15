@@ -32,6 +32,13 @@ const vendorSchema = new mongoose.Schema({
     fulfillmentLeadDays: { type: Number, min: 0, default: 2 },
     allowBackorders: { type: Boolean, default: false },
     visible: { type: Boolean, default: false },
+    shipping: {
+      flatRate: {
+        amount: { type: Number, min: 0, validate: Number.isSafeInteger },
+        currency: { type: String, uppercase: true, minlength: 3, maxlength: 3 },
+      },
+      eligibleCountryCodes: [{ type: String, uppercase: true, minlength: 2, maxlength: 2 }],
+    },
   },
 }, { timestamps: true });
 

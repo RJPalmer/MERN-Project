@@ -1,9 +1,9 @@
 const express = require('express');
 const { requireAuth } = require('../auth/auth.middleware');
-const { createVendorSchema } = require('./vendor.schemas');
+const { createVendorSchema, parseShippingSettings } = require('./vendor.schemas');
 const catalogRoutes = require('../catalog/catalog.routes');
 const inventoryRoutes = require('../inventory/inventory.routes');
-const { requireVendorOwner } = require('./vendor.middleware');
+const { requireVendorManager, requireVendorOwner } = require('./vendor.middleware');
 const vendorService = require('./vendor.service');
 
 const router = express.Router();
@@ -39,6 +39,17 @@ router.get('/mine', async (req, res) => {
 router.post('/:vendorId/submit', requireVendorOwner, async (req, res) => {
   const vendor = await vendorService.submitVendorForReview(req.params.vendorId, req.authUser.id);
   return res.json({ vendor });
+});
+
+router.get('/:vendorId/shipping', requireVendorManager, async (req, res) => {
+  const shipping = await vendorService.getShippingSettings(req.params.vendorId);
+  return res.json({ shipping });
+});
+
+router.put('/:vendorId/shipping', requireVendorManager, async (req, res) => {
+  const shipping = parseShippingSettings(req.body);
+  const updated = await vendorService.updateShippingSettings(req.params.vendorId, shipping);
+  return res.json({ shipping: updated });
 });
 
 module.exports = router;

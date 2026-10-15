@@ -34,7 +34,7 @@ async function createCheckoutQuote(customerId, addressId) {
       .populate({
         path: 'productId',
         select: 'title slug status vendorId media',
-        populate: { path: 'vendorId', select: 'slug displayName status settings.visible' },
+        populate: { path: 'vendorId', select: 'slug displayName status settings.visible settings.shipping' },
       })
       .lean(),
     InventoryItem.find({ variantId: { $in: variantIds } }).lean(),
@@ -47,7 +47,6 @@ async function createCheckoutQuote(customerId, addressId) {
     ...(!shippingAddress
       ? [{ code: 'SHIPPING_ADDRESS_REQUIRED', message: 'Add or select a shipping address to continue' }]
       : []),
-    { code: 'SHIPPING_NOT_CONFIGURED', message: 'Shipping rates are not configured yet' },
     { code: 'TAX_NOT_CONFIGURED', message: 'Tax calculation is not configured yet' },
     { code: 'PAYMENTS_NOT_CONFIGURED', message: 'Payment processing is not configured yet' },
   ];
@@ -94,6 +93,7 @@ async function createCheckoutQuote(customerId, addressId) {
     if (!group) {
       group = {
         vendor: { id: vendor._id, slug: vendor.slug, displayName: vendor.displayName },
+        shippingSettings: vendor.settings?.shipping,
         items: [],
         subtotalAmount: 0,
       };
@@ -120,13 +120,58 @@ async function createCheckoutQuote(customerId, addressId) {
   }
 
   quoteCurrency = quoteCurrency || cart.currency;
-  const vendors = Array.from(vendorGroups.values()).map((group) => ({
-    vendor: group.vendor,
-    items: group.items,
-    subtotal: money(group.subtotalAmount, quoteCurrency),
-    shipping: null,
-    tax: null,
-  }));
+  let shippingTotalAmount = 0;
+  let allShippingAvailable = vendorGroups.size > 0 && Boolean(shippingAddress);
+  const vendors = Array.from(vendorGroups.values()).map((group) => {
+    const rate = group.shippingSettings?.flatRate;
+    const eligibleCountries = group.shippingSettings?.eligibleCountryCodes || [];
+    let shipping = null;
+    let shippingBlocker = null;
+
+    if (!rate || !Number.isSafeInteger(rate.amount) || typeof rate.currency !== 'string') {
+      shippingBlocker = {
+        code: 'VENDOR_SHIPPING_NOT_CONFIGURED',
+        message: 'This vendor has not configured a flat shipping rate',
+      };
+    } else if (shippingAddress && !eligibleCountries.includes(shippingAddress.countryCode)) {
+      shippingBlocker = {
+        code: 'SHIPPING_DESTINATION_UNAVAILABLE',
+        message: 'This vendor does not ship to the selected country',
+      };
+    } else if (shippingAddress && rate.currency !== quoteCurrency) {
+      shippingBlocker = {
+        code: 'SHIPPING_CURRENCY_MISMATCH',
+        message: 'This vendor shipping rate does not use the checkout currency',
+      };
+    } else if (shippingAddress) {
+      shipping = money(rate.amount, quoteCurrency);
+      if (!Number.isSafeInteger(shippingTotalAmount + rate.amount)) {
+        throw new CheckoutError(409, 'QUOTE_TOTAL_UNSUPPORTED', 'Shipping total exceeds the supported money range');
+      }
+      shippingTotalAmount += rate.amount;
+    }
+
+    if (shippingBlocker) {
+      allShippingAvailable = false;
+      blockers.push({ ...shippingBlocker, vendorId: group.vendor.id });
+    }
+
+    return {
+      vendor: group.vendor,
+      items: group.items,
+      subtotal: money(group.subtotalAmount, quoteCurrency),
+      shipping,
+      tax: null,
+    };
+  });
+
+  const shipping = allShippingAvailable ? money(shippingTotalAmount, quoteCurrency) : null;
+  const totalBeforeTax = shipping
+    ? money(subtotalAmount + shippingTotalAmount, quoteCurrency)
+    : null;
+  if (totalBeforeTax && !Number.isSafeInteger(totalBeforeTax.amount)) {
+    throw new CheckoutError(409, 'QUOTE_TOTAL_UNSUPPORTED', 'Checkout total exceeds the supported money range');
+  }
 
   return {
     quote: {
@@ -145,8 +190,9 @@ async function createCheckoutQuote(customerId, addressId) {
       } : null,
       vendors,
       subtotal: money(subtotalAmount, quoteCurrency),
+      totalBeforeTax,
       discount: money(0, quoteCurrency),
-      shipping: null,
+      shipping,
       tax: null,
       total: null,
       readyForPayment: blockers.length === 0,

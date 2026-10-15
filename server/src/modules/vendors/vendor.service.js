@@ -88,4 +88,27 @@ async function submitVendorForReview(vendorId, actorId) {
   return presentVendor(vendor, 'owner');
 }
 
-module.exports = { VendorError, createVendor, listMyVendors, submitVendorForReview };
+async function getShippingSettings(vendorId) {
+  const vendor = await Vendor.findById(vendorId).select('settings.shipping').lean();
+  if (!vendor) throw new VendorError(404, 'VENDOR_NOT_FOUND', 'Vendor not found');
+  return vendor.settings?.shipping || null;
+}
+
+async function updateShippingSettings(vendorId, shipping) {
+  const vendor = await Vendor.findByIdAndUpdate(
+    vendorId,
+    { $set: { 'settings.shipping': shipping } },
+    { new: true, runValidators: true },
+  ).select('settings.shipping').lean();
+  if (!vendor) throw new VendorError(404, 'VENDOR_NOT_FOUND', 'Vendor not found');
+  return vendor.settings?.shipping || null;
+}
+
+module.exports = {
+  VendorError,
+  createVendor,
+  getShippingSettings,
+  listMyVendors,
+  submitVendorForReview,
+  updateShippingSettings,
+};
