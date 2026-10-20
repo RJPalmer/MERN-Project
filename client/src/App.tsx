@@ -1,10 +1,15 @@
 import './App.css'
 import ProductCatalog from './pages/ProductCatalog'
+import ProductDetail from './pages/ProductDetail'
 
 const copyrightYear = new Date().getFullYear()
 
 function App() {
-  if (window.location.pathname === '/products') return <ProductCatalog />
+  const pathSegments = window.location.pathname.split('/').filter(Boolean)
+  if (pathSegments[0] === 'products' && pathSegments.length === 2) return <ProductCatalog />
+  if (pathSegments[0] === 'products' && pathSegments.length === 3) {
+    return <ProductDetail vendorSlug={pathSegments[1]} productSlug={pathSegments[2]} />
+  }
 
   return (
     <div className="app-shell">
