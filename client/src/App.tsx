@@ -1,8 +1,11 @@
 import './App.css'
+import ProductCatalog from './pages/ProductCatalog'
 
 const copyrightYear = new Date().getFullYear()
 
 function App() {
+  if (window.location.pathname === '/products') return <ProductCatalog />
+
   return (
     <div className="app-shell">
       <header className="site-header">
