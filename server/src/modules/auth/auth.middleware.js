@@ -4,7 +4,9 @@ async function requireAuth(req, res, next) {
   const authorization = req.get('authorization') || '';
   const match = authorization.match(/^Bearer\s+(.+)$/i);
   if (!match) {
-    return res.status(401).json({ error: { code: 'UNAUTHENTICATED', message: 'Bearer access token is required' } });
+    return res
+      .status(401)
+      .json({ error: { code: 'UNAUTHENTICATED', message: 'Bearer access token is required' } });
   }
 
   try {

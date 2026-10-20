@@ -7,11 +7,21 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   const query = req.query.q;
   const vendorSlug = req.query.vendor;
-  if ((query !== undefined && typeof query !== 'string') || (vendorSlug !== undefined && typeof vendorSlug !== 'string')) {
-    return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'q and vendor must be single strings' } });
+  if (
+    (query !== undefined && typeof query !== 'string') ||
+    (vendorSlug !== undefined && typeof vendorSlug !== 'string')
+  ) {
+    return res.status(400).json({
+      error: { code: 'VALIDATION_ERROR', message: 'q and vendor must be single strings' },
+    });
   }
-  if ((query && query.length > 100) || (vendorSlug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(vendorSlug))) {
-    return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid search query or vendor slug' } });
+  if (
+    (query && query.length > 100) ||
+    (vendorSlug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(vendorSlug))
+  ) {
+    return res.status(400).json({
+      error: { code: 'VALIDATION_ERROR', message: 'Invalid search query or vendor slug' },
+    });
   }
 
   const requestedLimit = Number.parseInt(req.query.limit, 10);
@@ -27,12 +37,20 @@ router.get('/', async (req, res) => {
 
 router.get('/:vendorSlug/:productSlug', async (req, res) => {
   const { vendorSlug, productSlug } = req.params;
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(vendorSlug) || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(productSlug)) {
-    return res.status(404).json({ error: { code: 'PRODUCT_NOT_FOUND', message: 'Product not found' } });
+  if (
+    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(vendorSlug) ||
+    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(productSlug)
+  ) {
+    return res
+      .status(404)
+      .json({ error: { code: 'PRODUCT_NOT_FOUND', message: 'Product not found' } });
   }
 
   const product = await catalogService.getStorefrontProduct(vendorSlug, productSlug);
-  if (!product) return res.status(404).json({ error: { code: 'PRODUCT_NOT_FOUND', message: 'Product not found' } });
+  if (!product)
+    return res
+      .status(404)
+      .json({ error: { code: 'PRODUCT_NOT_FOUND', message: 'Product not found' } });
   return res.json({ product });
 });
 

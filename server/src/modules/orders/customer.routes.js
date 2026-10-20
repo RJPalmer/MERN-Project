@@ -4,7 +4,14 @@ const { parsePage } = require('./order.pagination');
 const orderService = require('./order.service');
 
 const router = express.Router();
-const orderStatuses = ['pending_payment', 'paid', 'partially_fulfilled', 'fulfilled', 'cancelled', 'refunded'];
+const orderStatuses = [
+  'pending_payment',
+  'paid',
+  'partially_fulfilled',
+  'fulfilled',
+  'cancelled',
+  'refunded',
+];
 
 router.use(requireAuth);
 

@@ -14,7 +14,9 @@ router.get('/', async (req, res) => {
 
 router.put('/items/:variantId', async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.variantId)) {
-    return res.status(404).json({ error: { code: 'VARIANT_NOT_FOUND', message: 'Variant not found' } });
+    return res
+      .status(404)
+      .json({ error: { code: 'VARIANT_NOT_FOUND', message: 'Variant not found' } });
   }
   const { quantity } = parseSetCartItem(req.body);
   const cart = await cartService.setItemQuantity(req.authUser.id, req.params.variantId, quantity);

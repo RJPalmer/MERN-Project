@@ -6,7 +6,15 @@ const { parseShipment } = require('./order.schemas');
 const orderService = require('./order.service');
 
 const router = express.Router({ mergeParams: true });
-const vendorOrderStatuses = ['awaiting_payment', 'processing', 'partially_shipped', 'shipped', 'delivered', 'cancelled', 'returned'];
+const vendorOrderStatuses = [
+  'awaiting_payment',
+  'processing',
+  'partially_shipped',
+  'shipped',
+  'delivered',
+  'cancelled',
+  'returned',
+];
 
 router.use(requireAuth, requireVendorFulfillment);
 
@@ -17,7 +25,10 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:vendorOrderNumber', async (req, res) => {
-  const order = await orderService.getVendorOrder(req.params.vendorId, req.params.vendorOrderNumber);
+  const order = await orderService.getVendorOrder(
+    req.params.vendorId,
+    req.params.vendorOrderNumber,
+  );
   return res.json({ order });
 });
 

@@ -27,7 +27,9 @@ async function changeDefaults(customerId, address, session) {
 }
 
 async function listAddresses(customerId) {
-  return CustomerAddress.find({ customerId }).sort({ isDefaultShipping: -1, isDefaultBilling: -1, createdAt: 1 }).lean();
+  return CustomerAddress.find({ customerId })
+    .sort({ isDefaultShipping: -1, isDefaultBilling: -1, createdAt: 1 })
+    .lean();
 }
 
 async function createAddress(customerId, input) {
@@ -80,12 +82,18 @@ async function deleteAddress(customerId, addressId) {
       if (!deleted) throw new AddressError(404, 'ADDRESS_NOT_FOUND', 'Address not found');
 
       if (deleted.isDefaultShipping || deleted.isDefaultBilling) {
-        const nextAddress = await CustomerAddress.findOne({ customerId }).sort({ createdAt: 1 }).session(session);
+        const nextAddress = await CustomerAddress.findOne({ customerId })
+          .sort({ createdAt: 1 })
+          .session(session);
         if (nextAddress) {
           const defaults = {};
           if (deleted.isDefaultShipping) defaults.isDefaultShipping = true;
           if (deleted.isDefaultBilling) defaults.isDefaultBilling = true;
-          await CustomerAddress.updateOne({ _id: nextAddress.id, customerId }, { $set: defaults }, { session });
+          await CustomerAddress.updateOne(
+            { _id: nextAddress.id, customerId },
+            { $set: defaults },
+            { session },
+          );
         }
       }
     });

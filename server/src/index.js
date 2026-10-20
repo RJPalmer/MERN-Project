@@ -29,7 +29,10 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 Promise.allSettled([connectMongo(), connectRedis()]).then((results) => {
   results.forEach((result, index) => {
     if (result.status === 'rejected') {
-      logger.error({ err: result.reason, service: index === 0 ? 'mongodb' : 'redis' }, 'Initial connection failed');
+      logger.error(
+        { err: result.reason, service: index === 0 ? 'mongodb' : 'redis' },
+        'Initial connection failed',
+      );
     }
   });
 });

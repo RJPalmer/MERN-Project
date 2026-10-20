@@ -1,6 +1,11 @@
 const { z } = require('zod');
 
-const email = z.string().trim().email().max(254).transform((value) => value.toLowerCase());
+const email = z
+  .string()
+  .trim()
+  .email()
+  .max(254)
+  .transform((value) => value.toLowerCase());
 const password = z.string().min(12).max(128);
 
 const registerSchema = z.object({

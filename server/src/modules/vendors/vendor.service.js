@@ -37,7 +37,8 @@ async function createVendor(userId, input) {
       contact: { email: input.contactEmail, phone: input.contactPhone },
     });
   } catch (error) {
-    if (error.code === 11000) throw new VendorError(409, 'VENDOR_SLUG_IN_USE', 'This vendor slug is already in use');
+    if (error.code === 11000)
+      throw new VendorError(409, 'VENDOR_SLUG_IN_USE', 'This vendor slug is already in use');
     throw error;
   }
 
@@ -83,7 +84,11 @@ async function submitVendorForReview(vendorId, actorId) {
     { new: true, runValidators: true },
   );
   if (!vendor) {
-    throw new VendorError(409, 'VENDOR_NOT_SUBMITTABLE', 'Vendor must be a draft or rejected profile to submit for review');
+    throw new VendorError(
+      409,
+      'VENDOR_NOT_SUBMITTABLE',
+      'Vendor must be a draft or rejected profile to submit for review',
+    );
   }
   return presentVendor(vendor, 'owner');
 }
@@ -99,7 +104,9 @@ async function updateShippingSettings(vendorId, shipping) {
     vendorId,
     { $set: { 'settings.shipping': shipping } },
     { new: true, runValidators: true },
-  ).select('settings.shipping').lean();
+  )
+    .select('settings.shipping')
+    .lean();
   if (!vendor) throw new VendorError(404, 'VENDOR_NOT_FOUND', 'Vendor not found');
   return vendor.settings?.shipping || null;
 }

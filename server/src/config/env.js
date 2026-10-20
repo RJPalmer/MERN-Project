@@ -26,7 +26,9 @@ if (!result.success) {
 }
 
 if (result.data.JWT_ACCESS_SECRET === result.data.JWT_REFRESH_SECRET) {
-  throw new Error('Invalid environment configuration: JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must differ');
+  throw new Error(
+    'Invalid environment configuration: JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must differ',
+  );
 }
 
 module.exports = Object.freeze(result.data);

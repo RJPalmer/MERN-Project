@@ -22,8 +22,12 @@ function parsePage(query, allowedStatuses) {
     try {
       const decoded = JSON.parse(Buffer.from(query.cursor, 'base64url').toString('utf8'));
       const createdAt = new Date(decoded.createdAt);
-      if (typeof decoded.id !== 'string' || !mongoose.isValidObjectId(decoded.id)
-        || Number.isNaN(createdAt.getTime())) throw new Error();
+      if (
+        typeof decoded.id !== 'string' ||
+        !mongoose.isValidObjectId(decoded.id) ||
+        Number.isNaN(createdAt.getTime())
+      )
+        throw new Error();
       cursor = { createdAt, id: new mongoose.Types.ObjectId(decoded.id) };
     } catch {
       throw new OrderQueryError('cursor is invalid');
@@ -33,8 +37,9 @@ function parsePage(query, allowedStatuses) {
 }
 
 function nextCursor(record) {
-  return Buffer.from(JSON.stringify({ createdAt: record.createdAt.toISOString(), id: record._id.toString() }))
-    .toString('base64url');
+  return Buffer.from(
+    JSON.stringify({ createdAt: record.createdAt.toISOString(), id: record._id.toString() }),
+  ).toString('base64url');
 }
 
 function pageQuery(cursor) {

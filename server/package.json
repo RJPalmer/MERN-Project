@@ -8,6 +8,8 @@
     "dev": "node --watch-path=./src src/index.js",
     "worker:inventory-holds": "node src/jobs/inventory-hold-expiry.worker.js",
     "admin:promote": "node scripts/promote-admin.js",
+    "format": "prettier --write \"src/**/*.js\" \"scripts/**/*.js\"",
+    "format:check": "prettier --check \"src/**/*.js\" \"scripts/**/*.js\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -25,5 +27,8 @@
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
     "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10"
   }
 }

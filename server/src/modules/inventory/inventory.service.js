@@ -43,8 +43,17 @@ async function adjustStock({ vendorId, variantId, actorId, type, quantityDelta, 
 
   try {
     await session.withTransaction(async () => {
-      const variant = await ProductVariant.findOne({ _id: variantId, vendorId, active: true }).session(session);
-      if (!variant) throw new InventoryError(404, 'VARIANT_NOT_FOUND', 'Active variant not found for this vendor');
+      const variant = await ProductVariant.findOne({
+        _id: variantId,
+        vendorId,
+        active: true,
+      }).session(session);
+      if (!variant)
+        throw new InventoryError(
+          404,
+          'VARIANT_NOT_FOUND',
+          'Active variant not found for this vendor',
+        );
 
       await InventoryItem.updateOne(
         { variantId, vendorId },
@@ -61,18 +70,27 @@ async function adjustStock({ vendorId, variantId, actorId, type, quantityDelta, 
         { new: true, runValidators: true, session },
       );
       if (!item) {
-        throw new InventoryError(409, 'INSUFFICIENT_STOCK', 'Adjustment would reduce available stock below zero');
+        throw new InventoryError(
+          409,
+          'INSUFFICIENT_STOCK',
+          'Adjustment would reduce available stock below zero',
+        );
       }
 
-      const [movement] = await InventoryMovement.create([{
-        vendorId,
-        variantId,
-        type,
-        quantityDelta,
-        reference: { type: 'manual', id: null },
-        note,
-        actorId,
-      }], { session });
+      const [movement] = await InventoryMovement.create(
+        [
+          {
+            vendorId,
+            variantId,
+            type,
+            quantityDelta,
+            reference: { type: 'manual', id: null },
+            note,
+            actorId,
+          },
+        ],
+        { session },
+      );
 
       await ProductVariant.updateOne(
         { _id: variantId, vendorId },
@@ -84,7 +102,12 @@ async function adjustStock({ vendorId, variantId, actorId, type, quantityDelta, 
         inventory: {
           id: item.id,
           vendorId: item.vendorId,
-          variant: { id: variant.id, sku: variant.sku, title: variant.title, productId: variant.productId },
+          variant: {
+            id: variant.id,
+            sku: variant.sku,
+            title: variant.title,
+            productId: variant.productId,
+          },
           onHand: item.onHand,
           reserved: item.reserved,
           available: item.available,

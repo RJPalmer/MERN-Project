@@ -20,7 +20,9 @@ router.post('/', async (req, res) => {
 
 router.put('/:addressId', async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.addressId)) {
-    return res.status(404).json({ error: { code: 'ADDRESS_NOT_FOUND', message: 'Address not found' } });
+    return res
+      .status(404)
+      .json({ error: { code: 'ADDRESS_NOT_FOUND', message: 'Address not found' } });
   }
   const input = parseAddress(req.body);
   const address = await addressService.updateAddress(req.authUser.id, req.params.addressId, input);
@@ -29,7 +31,9 @@ router.put('/:addressId', async (req, res) => {
 
 router.delete('/:addressId', async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.addressId)) {
-    return res.status(404).json({ error: { code: 'ADDRESS_NOT_FOUND', message: 'Address not found' } });
+    return res
+      .status(404)
+      .json({ error: { code: 'ADDRESS_NOT_FOUND', message: 'Address not found' } });
   }
   const result = await addressService.deleteAddress(req.authUser.id, req.params.addressId);
   return res.json(result);

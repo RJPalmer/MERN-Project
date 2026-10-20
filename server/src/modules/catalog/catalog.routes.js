@@ -13,7 +13,10 @@ function validateCreateProduct(body) {
     const error = new Error('Request validation failed');
     error.status = 400;
     error.code = 'VALIDATION_ERROR';
-    error.details = result.error.issues.map(({ path, message }) => ({ path: path.join('.'), message }));
+    error.details = result.error.issues.map(({ path, message }) => ({
+      path: path.join('.'),
+      message,
+    }));
     throw error;
   }
   return result.data;
@@ -29,7 +32,9 @@ router.post('/', async (req, res) => {
 
 router.post('/:productId/submit', async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.productId)) {
-    return res.status(404).json({ error: { code: 'PRODUCT_NOT_FOUND', message: 'Product not found' } });
+    return res
+      .status(404)
+      .json({ error: { code: 'PRODUCT_NOT_FOUND', message: 'Product not found' } });
   }
   const product = await catalogService.submitProductForReview(
     req.params.vendorId,

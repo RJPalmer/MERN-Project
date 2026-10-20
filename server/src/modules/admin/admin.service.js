@@ -14,7 +14,9 @@ async function listPendingVendors(limit) {
   return Vendor.find({ status: 'pending_review' })
     .sort({ updatedAt: 1 })
     .limit(limit)
-    .select('slug legalName displayName description contact status reviewHistory createdAt updatedAt')
+    .select(
+      'slug legalName displayName description contact status reviewHistory createdAt updatedAt',
+    )
     .lean();
 }
 
@@ -44,7 +46,11 @@ async function reviewVendor(vendorId, reviewerId, decision) {
     { new: true, runValidators: true },
   );
   if (!vendor) {
-    throw new AdminError(409, 'VENDOR_NOT_PENDING', 'Vendor does not exist or is not awaiting review');
+    throw new AdminError(
+      409,
+      'VENDOR_NOT_PENDING',
+      'Vendor does not exist or is not awaiting review',
+    );
   }
 
   return {
@@ -68,16 +74,31 @@ async function listPendingProducts(limit) {
 }
 
 async function reviewProduct(productId, reviewerId, decision) {
-  const product = await Product.findOne({ _id: productId, status: 'pending_review' }).select('vendorId');
-  if (!product) throw new AdminError(409, 'PRODUCT_NOT_PENDING', 'Product does not exist or is not awaiting review');
+  const product = await Product.findOne({ _id: productId, status: 'pending_review' }).select(
+    'vendorId',
+  );
+  if (!product)
+    throw new AdminError(
+      409,
+      'PRODUCT_NOT_PENDING',
+      'Product does not exist or is not awaiting review',
+    );
 
   if (decision.status === 'active') {
     const [vendor, activeVariant] = await Promise.all([
-      Vendor.findOne({ _id: product.vendorId, status: 'active', 'settings.visible': true }).select('_id'),
+      Vendor.findOne({ _id: product.vendorId, status: 'active', 'settings.visible': true }).select(
+        '_id',
+      ),
       ProductVariant.findOne({ productId, active: true }).select('_id'),
     ]);
-    if (!vendor) throw new AdminError(409, 'VENDOR_NOT_ACTIVE', 'Product vendor must be approved and visible');
-    if (!activeVariant) throw new AdminError(409, 'PRODUCT_HAS_NO_ACTIVE_VARIANTS', 'Product needs at least one active variant');
+    if (!vendor)
+      throw new AdminError(409, 'VENDOR_NOT_ACTIVE', 'Product vendor must be approved and visible');
+    if (!activeVariant)
+      throw new AdminError(
+        409,
+        'PRODUCT_HAS_NO_ACTIVE_VARIANTS',
+        'Product needs at least one active variant',
+      );
   }
 
   const action = decision.status === 'active' ? 'approved' : 'rejected';
@@ -99,7 +120,8 @@ async function reviewProduct(productId, reviewerId, decision) {
     },
     { new: true, runValidators: true },
   );
-  if (!reviewed) throw new AdminError(409, 'PRODUCT_NOT_PENDING', 'Product has already been reviewed');
+  if (!reviewed)
+    throw new AdminError(409, 'PRODUCT_NOT_PENDING', 'Product has already been reviewed');
 
   return {
     id: reviewed.id,
@@ -112,4 +134,10 @@ async function reviewProduct(productId, reviewerId, decision) {
   };
 }
 
-module.exports = { AdminError, listPendingProducts, listPendingVendors, reviewProduct, reviewVendor };
+module.exports = {
+  AdminError,
+  listPendingProducts,
+  listPendingVendors,
+  reviewProduct,
+  reviewVendor,
+};

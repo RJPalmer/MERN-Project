@@ -47,10 +47,13 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 async function start() {
   await connectMongo();
-  logger.info({
-    intervalMs: env.INVENTORY_HOLD_POLL_INTERVAL_MS,
-    batchSize: env.INVENTORY_HOLD_BATCH_SIZE,
-  }, 'Inventory hold worker started');
+  logger.info(
+    {
+      intervalMs: env.INVENTORY_HOLD_POLL_INTERVAL_MS,
+      batchSize: env.INVENTORY_HOLD_BATCH_SIZE,
+    },
+    'Inventory hold worker started',
+  );
   activeRun = runCycle();
   await activeRun;
   activeRun = null;

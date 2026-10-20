@@ -24,7 +24,9 @@ router.get('/products/pending', async (req, res) => {
 
 router.patch('/vendors/:vendorId/review', async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.vendorId)) {
-    return res.status(404).json({ error: { code: 'VENDOR_NOT_FOUND', message: 'Vendor not found' } });
+    return res
+      .status(404)
+      .json({ error: { code: 'VENDOR_NOT_FOUND', message: 'Vendor not found' } });
   }
   const decision = parseReviewVendor(req.body);
   const vendor = await adminService.reviewVendor(req.params.vendorId, req.authUser.id, decision);
@@ -33,7 +35,9 @@ router.patch('/vendors/:vendorId/review', async (req, res) => {
 
 router.patch('/products/:productId/review', async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.productId)) {
-    return res.status(404).json({ error: { code: 'PRODUCT_NOT_FOUND', message: 'Product not found' } });
+    return res
+      .status(404)
+      .json({ error: { code: 'PRODUCT_NOT_FOUND', message: 'Product not found' } });
   }
   const decision = parseReviewProduct(req.body);
   const product = await adminService.reviewProduct(req.params.productId, req.authUser.id, decision);

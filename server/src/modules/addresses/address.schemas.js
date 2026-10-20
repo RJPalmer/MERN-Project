@@ -9,7 +9,11 @@ const addressSchema = z.object({
   city: z.string().trim().min(2).max(100),
   region: z.string().trim().min(1).max(100),
   postalCode: z.string().trim().min(2).max(20),
-  countryCode: z.string().trim().regex(/^[a-zA-Z]{2}$/).transform((value) => value.toUpperCase()),
+  countryCode: z
+    .string()
+    .trim()
+    .regex(/^[a-zA-Z]{2}$/)
+    .transform((value) => value.toUpperCase()),
   isDefaultShipping: z.boolean().default(false),
   isDefaultBilling: z.boolean().default(false),
 });
@@ -20,7 +24,10 @@ function parseAddress(body) {
     const error = new Error('Request validation failed');
     error.status = 400;
     error.code = 'VALIDATION_ERROR';
-    error.details = result.error.issues.map(({ path, message }) => ({ path: path.join('.'), message }));
+    error.details = result.error.issues.map(({ path, message }) => ({
+      path: path.join('.'),
+      message,
+    }));
     throw error;
   }
   return result.data;

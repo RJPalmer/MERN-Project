@@ -60,16 +60,24 @@ async function createProduct(vendorId, input) {
       options: input.options,
     });
   } catch (error) {
-    if (error.code === 11000) throw new CatalogError(409, 'PRODUCT_SLUG_IN_USE', 'This product slug is already in use for the vendor');
+    if (error.code === 11000)
+      throw new CatalogError(
+        409,
+        'PRODUCT_SLUG_IN_USE',
+        'This product slug is already in use for the vendor',
+      );
     throw error;
   }
 
   try {
-    const variants = await ProductVariant.insertMany(input.variants.map((variant) => ({
-      ...variant,
-      productId: product.id,
-      vendorId,
-    })), { ordered: true });
+    const variants = await ProductVariant.insertMany(
+      input.variants.map((variant) => ({
+        ...variant,
+        productId: product.id,
+        vendorId,
+      })),
+      { ordered: true },
+    );
     product.variantIds = variants.map((variant) => variant.id);
     await product.save();
     return presentProduct(product, variants);
@@ -78,7 +86,8 @@ async function createProduct(vendorId, input) {
       ProductVariant.deleteMany({ productId: product.id }),
       Product.deleteOne({ _id: product.id }),
     ]);
-    if (error.code === 11000) throw new CatalogError(409, 'SKU_IN_USE', 'A variant SKU is already in use for this vendor');
+    if (error.code === 11000)
+      throw new CatalogError(409, 'SKU_IN_USE', 'A variant SKU is already in use for this vendor');
     throw error;
   }
 }
@@ -87,7 +96,9 @@ async function listVendorProducts(vendorId) {
   const products = await Product.find({ vendorId }).sort({ createdAt: -1 });
   if (!products.length) return [];
 
-  const variants = await ProductVariant.find({ productId: { $in: products.map((product) => product.id) } });
+  const variants = await ProductVariant.find({
+    productId: { $in: products.map((product) => product.id) },
+  });
   const variantsByProductId = new Map();
   for (const variant of variants) {
     const productKey = variant.productId.toString();
@@ -96,12 +107,23 @@ async function listVendorProducts(vendorId) {
     variantsByProductId.set(productKey, group);
   }
 
-  return products.map((product) => presentProduct(product, variantsByProductId.get(product.id) || []));
+  return products.map((product) =>
+    presentProduct(product, variantsByProductId.get(product.id) || []),
+  );
 }
 
 async function submitProductForReview(vendorId, productId, actorId) {
-  const vendor = await Vendor.findOne({ _id: vendorId, status: 'active', 'settings.visible': true });
-  if (!vendor) throw new CatalogError(409, 'VENDOR_NOT_ACTIVE', 'Vendor must be approved before products can be submitted');
+  const vendor = await Vendor.findOne({
+    _id: vendorId,
+    status: 'active',
+    'settings.visible': true,
+  });
+  if (!vendor)
+    throw new CatalogError(
+      409,
+      'VENDOR_NOT_ACTIVE',
+      'Vendor must be approved before products can be submitted',
+    );
 
   const product = await Product.findOneAndUpdate(
     { _id: productId, vendorId, status: { $in: ['draft', 'rejected'] } },
@@ -118,7 +140,12 @@ async function submitProductForReview(vendorId, productId, actorId) {
     },
     { new: true, runValidators: true },
   );
-  if (!product) throw new CatalogError(409, 'PRODUCT_NOT_SUBMITTABLE', 'Product must be a draft or rejected product owned by this vendor');
+  if (!product)
+    throw new CatalogError(
+      409,
+      'PRODUCT_NOT_SUBMITTABLE',
+      'Product must be a draft or rejected product owned by this vendor',
+    );
   return product;
 }
 
@@ -162,9 +189,14 @@ async function listStorefrontProducts({ query, vendorSlug, limit, cursor }) {
   }
   if (cursor) productFilter._id = { $lt: cursor };
 
-  const products = await Product.find(productFilter).sort({ _id: -1 }).limit(limit + 1);
+  const products = await Product.find(productFilter)
+    .sort({ _id: -1 })
+    .limit(limit + 1);
   const page = products.slice(0, limit);
-  const variants = await ProductVariant.find({ productId: { $in: page.map((product) => product.id) }, active: true });
+  const variants = await ProductVariant.find({
+    productId: { $in: page.map((product) => product.id) },
+    active: true,
+  });
   const variantsByProductId = new Map();
   for (const variant of variants) {
     const productKey = variant.productId.toString();
@@ -175,11 +207,13 @@ async function listStorefrontProducts({ query, vendorSlug, limit, cursor }) {
   const vendorsById = new Map(vendors.map((vendor) => [vendor.id, vendor]));
   const visibleProducts = page
     .filter((product) => (variantsByProductId.get(product.id) || []).length > 0)
-    .map((product) => presentStorefrontProduct(
-      product,
-      variantsByProductId.get(product.id) || [],
-      vendorsById.get(product.vendorId.toString()),
-    ));
+    .map((product) =>
+      presentStorefrontProduct(
+        product,
+        variantsByProductId.get(product.id) || [],
+        vendorsById.get(product.vendorId.toString()),
+      ),
+    );
 
   return {
     products: visibleProducts,
@@ -188,11 +222,18 @@ async function listStorefrontProducts({ query, vendorSlug, limit, cursor }) {
 }
 
 async function getStorefrontProduct(vendorSlug, productSlug) {
-  const vendor = await Vendor.findOne({ slug: vendorSlug, status: 'active', 'settings.visible': true })
-    .select('_id slug displayName');
+  const vendor = await Vendor.findOne({
+    slug: vendorSlug,
+    status: 'active',
+    'settings.visible': true,
+  }).select('_id slug displayName');
   if (!vendor) return null;
 
-  const product = await Product.findOne({ vendorId: vendor.id, slug: productSlug, status: 'active' });
+  const product = await Product.findOne({
+    vendorId: vendor.id,
+    slug: productSlug,
+    status: 'active',
+  });
   if (!product) return null;
 
   const variants = await ProductVariant.find({ productId: product.id, active: true });

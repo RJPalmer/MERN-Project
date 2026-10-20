@@ -10,7 +10,10 @@ function parseSetCartItem(body) {
     const error = new Error('Request validation failed');
     error.status = 400;
     error.code = 'VALIDATION_ERROR';
-    error.details = result.error.issues.map(({ path, message }) => ({ path: path.join('.'), message }));
+    error.details = result.error.issues.map(({ path, message }) => ({
+      path: path.join('.'),
+      message,
+    }));
     throw error;
   }
   return result.data;

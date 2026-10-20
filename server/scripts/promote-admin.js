@@ -12,7 +12,9 @@ async function main() {
   await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/marketplace');
   const result = await User.updateOne({ email }, { $set: { platformRole: 'admin' } });
   if (result.matchedCount === 0) {
-    throw new Error(`No user found for ${email}. Register the account before granting admin access.`);
+    throw new Error(
+      `No user found for ${email}. Register the account before granting admin access.`,
+    );
   }
   process.stdout.write(`Granted platform admin access to ${email}.\n`);
 }

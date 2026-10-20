@@ -18,7 +18,11 @@ function money(amount, currency) {
 async function createCheckoutQuote(customerId, addressId) {
   const cart = await Cart.findOne({ customerId }).lean();
   if (!cart || cart.items.length === 0) {
-    throw new CheckoutError(400, 'CART_EMPTY', 'Add items to the cart before requesting a checkout quote');
+    throw new CheckoutError(
+      400,
+      'CART_EMPTY',
+      'Add items to the cart before requesting a checkout quote',
+    );
   }
 
   const shippingAddress = addressId
@@ -34,18 +38,28 @@ async function createCheckoutQuote(customerId, addressId) {
       .populate({
         path: 'productId',
         select: 'title slug status vendorId media',
-        populate: { path: 'vendorId', select: 'slug displayName status settings.visible settings.shipping' },
+        populate: {
+          path: 'vendorId',
+          select: 'slug displayName status settings.visible settings.shipping',
+        },
       })
       .lean(),
     InventoryItem.find({ variantId: { $in: variantIds } }).lean(),
   ]);
 
   const variantsById = new Map(variants.map((variant) => [variant._id.toString(), variant]));
-  const inventoryByVariantId = new Map(inventoryItems.map((item) => [item.variantId.toString(), item]));
+  const inventoryByVariantId = new Map(
+    inventoryItems.map((item) => [item.variantId.toString(), item]),
+  );
   const vendorGroups = new Map();
   const blockers = [
     ...(!shippingAddress
-      ? [{ code: 'SHIPPING_ADDRESS_REQUIRED', message: 'Add or select a shipping address to continue' }]
+      ? [
+          {
+            code: 'SHIPPING_ADDRESS_REQUIRED',
+            message: 'Add or select a shipping address to continue',
+          },
+        ]
       : []),
     { code: 'TAX_NOT_CONFIGURED', message: 'Tax calculation is not configured yet' },
     { code: 'PAYMENTS_NOT_CONFIGURED', message: 'Payment processing is not configured yet' },
@@ -60,9 +74,18 @@ async function createCheckoutQuote(customerId, addressId) {
     const vendor = product?.vendorId;
     const lineId = cartLine.variantId.toString();
 
-    if (!variant || !variant.active || product?.status !== 'active'
-      || vendor?.status !== 'active' || vendor?.settings?.visible !== true) {
-      invalidLines.push({ variantId: lineId, code: 'ITEM_UNAVAILABLE', message: 'This item is no longer available' });
+    if (
+      !variant ||
+      !variant.active ||
+      product?.status !== 'active' ||
+      vendor?.status !== 'active' ||
+      vendor?.settings?.visible !== true
+    ) {
+      invalidLines.push({
+        variantId: lineId,
+        code: 'ITEM_UNAVAILABLE',
+        message: 'This item is no longer available',
+      });
       continue;
     }
 
@@ -74,7 +97,11 @@ async function createCheckoutQuote(customerId, addressId) {
 
     const lineAmount = unitPrice.amount * cartLine.quantity;
     if (!Number.isSafeInteger(lineAmount) || !Number.isSafeInteger(subtotalAmount + lineAmount)) {
-      throw new CheckoutError(409, 'QUOTE_TOTAL_UNSUPPORTED', 'Cart total exceeds the supported money range');
+      throw new CheckoutError(
+        409,
+        'QUOTE_TOTAL_UNSUPPORTED',
+        'Cart total exceeds the supported money range',
+      );
     }
     subtotalAmount += lineAmount;
 
@@ -116,7 +143,13 @@ async function createCheckoutQuote(customerId, addressId) {
   }
 
   if (invalidLines.length) {
-    blockers.push(...invalidLines.map((line) => ({ code: line.code, message: line.message, variantId: line.variantId })));
+    blockers.push(
+      ...invalidLines.map((line) => ({
+        code: line.code,
+        message: line.message,
+        variantId: line.variantId,
+      })),
+    );
   }
 
   quoteCurrency = quoteCurrency || cart.currency;
@@ -146,7 +179,11 @@ async function createCheckoutQuote(customerId, addressId) {
     } else if (shippingAddress) {
       shipping = money(rate.amount, quoteCurrency);
       if (!Number.isSafeInteger(shippingTotalAmount + rate.amount)) {
-        throw new CheckoutError(409, 'QUOTE_TOTAL_UNSUPPORTED', 'Shipping total exceeds the supported money range');
+        throw new CheckoutError(
+          409,
+          'QUOTE_TOTAL_UNSUPPORTED',
+          'Shipping total exceeds the supported money range',
+        );
       }
       shippingTotalAmount += rate.amount;
     }
@@ -170,7 +207,11 @@ async function createCheckoutQuote(customerId, addressId) {
     ? money(subtotalAmount + shippingTotalAmount, quoteCurrency)
     : null;
   if (totalBeforeTax && !Number.isSafeInteger(totalBeforeTax.amount)) {
-    throw new CheckoutError(409, 'QUOTE_TOTAL_UNSUPPORTED', 'Checkout total exceeds the supported money range');
+    throw new CheckoutError(
+      409,
+      'QUOTE_TOTAL_UNSUPPORTED',
+      'Checkout total exceeds the supported money range',
+    );
   }
 
   return {
@@ -178,16 +219,18 @@ async function createCheckoutQuote(customerId, addressId) {
       type: 'merchandise_preview',
       createdAt: new Date().toISOString(),
       currency: quoteCurrency,
-      shippingAddress: shippingAddress ? {
-        id: shippingAddress._id,
-        recipientName: shippingAddress.recipientName,
-        addressLine1: shippingAddress.addressLine1,
-        addressLine2: shippingAddress.addressLine2,
-        city: shippingAddress.city,
-        region: shippingAddress.region,
-        postalCode: shippingAddress.postalCode,
-        countryCode: shippingAddress.countryCode,
-      } : null,
+      shippingAddress: shippingAddress
+        ? {
+            id: shippingAddress._id,
+            recipientName: shippingAddress.recipientName,
+            addressLine1: shippingAddress.addressLine1,
+            addressLine2: shippingAddress.addressLine2,
+            city: shippingAddress.city,
+            region: shippingAddress.region,
+            postalCode: shippingAddress.postalCode,
+            countryCode: shippingAddress.countryCode,
+          }
+        : null,
       vendors,
       subtotal: money(subtotalAmount, quoteCurrency),
       totalBeforeTax,

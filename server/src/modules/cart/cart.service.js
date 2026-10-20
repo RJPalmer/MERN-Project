@@ -47,18 +47,36 @@ function presentCart(cart) {
   for (const item of cart.items) {
     const variant = item.variantId;
     if (!variant) {
-      items.push({ id: item.id, variantId: null, vendorId: item.vendorId, quantity: item.quantity, available: false, issue: 'Variant no longer exists' });
+      items.push({
+        id: item.id,
+        variantId: null,
+        vendorId: item.vendorId,
+        quantity: item.quantity,
+        available: false,
+        issue: 'Variant no longer exists',
+      });
       continue;
     }
 
     const product = variant.productId;
     const vendor = product?.vendorId;
-    const purchasable = variant.active && product?.status === 'active' && vendor?.status === 'active' && vendor?.settings?.visible === true;
+    const purchasable =
+      variant.active &&
+      product?.status === 'active' &&
+      vendor?.status === 'active' &&
+      vendor?.settings?.visible === true;
     const stockAvailable = (variant.inventory?.available ?? 0) >= item.quantity;
     const price = currentPrice(variant);
     const lineSubtotal = price.amount * item.quantity;
-    if (!Number.isSafeInteger(lineSubtotal) || !Number.isSafeInteger(subtotal + (purchasable ? lineSubtotal : 0))) {
-      throw new CartError(500, 'INVALID_CART_TOTAL', 'Cart total is outside the supported money range');
+    if (
+      !Number.isSafeInteger(lineSubtotal) ||
+      !Number.isSafeInteger(subtotal + (purchasable ? lineSubtotal : 0))
+    ) {
+      throw new CartError(
+        500,
+        'INVALID_CART_TOTAL',
+        'Cart total is outside the supported money range',
+      );
     }
     if (purchasable) subtotal += lineSubtotal;
 
@@ -69,7 +87,11 @@ function presentCart(cart) {
       quantity: item.quantity,
       addedAt: item.addedAt,
       available: purchasable && stockAvailable,
-      issue: !purchasable ? 'Product or vendor is no longer available' : stockAvailable ? null : 'Insufficient current stock',
+      issue: !purchasable
+        ? 'Product or vendor is no longer available'
+        : stockAvailable
+          ? null
+          : 'Insufficient current stock',
       product: product ? { title: product.title, slug: product.slug, media: product.media } : null,
       vendor: vendor ? { slug: vendor.slug, displayName: vendor.displayName } : null,
       variant: { title: variant.title, sku: variant.sku, optionValues: variant.optionValues },
@@ -94,7 +116,8 @@ async function getCart(customerId) {
 }
 
 async function setItemQuantity(customerId, variantId, quantity) {
-  if (!mongoose.isValidObjectId(variantId)) throw new CartError(404, 'VARIANT_NOT_FOUND', 'Variant not found');
+  if (!mongoose.isValidObjectId(variantId))
+    throw new CartError(404, 'VARIANT_NOT_FOUND', 'Variant not found');
 
   const variant = await ProductVariant.findById(variantId).populate({
     path: 'productId',
@@ -102,7 +125,12 @@ async function setItemQuantity(customerId, variantId, quantity) {
   });
   const product = variant?.productId;
   const vendor = product?.vendorId;
-  if (!variant?.active || product?.status !== 'active' || vendor?.status !== 'active' || vendor?.settings?.visible !== true) {
+  if (
+    !variant?.active ||
+    product?.status !== 'active' ||
+    vendor?.status !== 'active' ||
+    vendor?.settings?.visible !== true
+  ) {
     throw new CartError(404, 'VARIANT_NOT_PURCHASABLE', 'Active catalog variant not found');
   }
 
@@ -124,7 +152,8 @@ async function setItemQuantity(customerId, variantId, quantity) {
   try {
     await cart.save();
   } catch (error) {
-    if (error.name === 'VersionError') throw new CartError(409, 'CART_CHANGED', 'Cart changed concurrently; reload and retry');
+    if (error.name === 'VersionError')
+      throw new CartError(409, 'CART_CHANGED', 'Cart changed concurrently; reload and retry');
     throw error;
   }
 
@@ -133,14 +162,16 @@ async function setItemQuantity(customerId, variantId, quantity) {
 }
 
 async function removeItem(customerId, variantId) {
-  if (!mongoose.isValidObjectId(variantId)) throw new CartError(404, 'VARIANT_NOT_FOUND', 'Variant not found');
+  if (!mongoose.isValidObjectId(variantId))
+    throw new CartError(404, 'VARIANT_NOT_FOUND', 'Variant not found');
   const cart = await getOrCreateCart(customerId);
   cart.items = cart.items.filter((item) => item.variantId.toString() !== variantId);
   if (!cart.items.length) cart.currency = 'USD';
   try {
     await cart.save();
   } catch (error) {
-    if (error.name === 'VersionError') throw new CartError(409, 'CART_CHANGED', 'Cart changed concurrently; reload and retry');
+    if (error.name === 'VersionError')
+      throw new CartError(409, 'CART_CHANGED', 'Cart changed concurrently; reload and retry');
     throw error;
   }
   await populateCart(cart);
@@ -154,7 +185,8 @@ async function clearCart(customerId) {
   try {
     await cart.save();
   } catch (error) {
-    if (error.name === 'VersionError') throw new CartError(409, 'CART_CHANGED', 'Cart changed concurrently; reload and retry');
+    if (error.name === 'VersionError')
+      throw new CartError(409, 'CART_CHANGED', 'Cart changed concurrently; reload and retry');
     throw error;
   }
   return presentCart(cart);

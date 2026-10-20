@@ -71,14 +71,16 @@ async function createSession(user) {
 
 async function register({ email, password, displayName }) {
   const existing = await User.exists({ email });
-  if (existing) throw new AuthError(409, 'EMAIL_IN_USE', 'An account with this email already exists');
+  if (existing)
+    throw new AuthError(409, 'EMAIL_IN_USE', 'An account with this email already exists');
 
   const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
   let user;
   try {
     user = await User.create({ email, passwordHash, displayName });
   } catch (error) {
-    if (error.code === 11000) throw new AuthError(409, 'EMAIL_IN_USE', 'An account with this email already exists');
+    if (error.code === 11000)
+      throw new AuthError(409, 'EMAIL_IN_USE', 'An account with this email already exists');
     throw error;
   }
 
@@ -88,7 +90,8 @@ async function register({ email, password, displayName }) {
 
 async function login({ email, password }) {
   const user = await User.findOne({ email }).select('+passwordHash +auth.refreshTokenHash');
-  const passwordMatches = user && await argon2.verify(user.passwordHash, password).catch(() => false);
+  const passwordMatches =
+    user && (await argon2.verify(user.passwordHash, password).catch(() => false));
   if (!passwordMatches || user.status !== 'active') {
     throw new AuthError(401, 'INVALID_CREDENTIALS', 'Email or password is incorrect');
   }
@@ -114,8 +117,12 @@ async function refreshSession(token) {
 
   const user = await User.findById(claims.sub).select('+auth.refreshTokenHash');
   const presentedHash = hashTokenId(claims.jti);
-  if (!user || user.status !== 'active' || !user.auth?.refreshTokenHash
-    || !crypto.timingSafeEqual(Buffer.from(presentedHash), Buffer.from(user.auth.refreshTokenHash))) {
+  if (
+    !user ||
+    user.status !== 'active' ||
+    !user.auth?.refreshTokenHash ||
+    !crypto.timingSafeEqual(Buffer.from(presentedHash), Buffer.from(user.auth.refreshTokenHash))
+  ) {
     throw new AuthError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token is invalid or expired');
   }
 
@@ -125,9 +132,14 @@ async function refreshSession(token) {
     { $set: { 'auth.refreshTokenHash': next.tokenHash } },
     { new: true },
   );
-  if (!updated) throw new AuthError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token has already been used');
+  if (!updated)
+    throw new AuthError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token has already been used');
 
-  return { user: publicUser(updated), accessToken: issueAccessToken(updated), refreshToken: next.token };
+  return {
+    user: publicUser(updated),
+    accessToken: issueAccessToken(updated),
+    refreshToken: next.token,
+  };
 }
 
 async function logout(token) {
@@ -152,10 +164,12 @@ async function authenticateAccessToken(token) {
   } catch {
     throw new AuthError(401, 'UNAUTHENTICATED', 'Access token is invalid or expired');
   }
-  if (claims.type !== 'access') throw new AuthError(401, 'UNAUTHENTICATED', 'Access token is invalid or expired');
+  if (claims.type !== 'access')
+    throw new AuthError(401, 'UNAUTHENTICATED', 'Access token is invalid or expired');
 
   const user = await User.findById(claims.sub);
-  if (!user || user.status !== 'active') throw new AuthError(401, 'UNAUTHENTICATED', 'Account is unavailable');
+  if (!user || user.status !== 'active')
+    throw new AuthError(401, 'UNAUTHENTICATED', 'Account is unavailable');
   return publicUser(user);
 }
 

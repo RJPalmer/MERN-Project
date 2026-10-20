@@ -56,7 +56,10 @@ async function listCustomerOrders(customerId, { limit, cursor, status }) {
     .lean();
   const hasMore = records.length > limit;
   const page = hasMore ? records.slice(0, limit) : records;
-  return { orders: page.map(customerOrderSummary), nextCursor: hasMore ? nextCursor(page[page.length - 1]) : null };
+  return {
+    orders: page.map(customerOrderSummary),
+    nextCursor: hasMore ? nextCursor(page[page.length - 1]) : null,
+  };
 }
 
 async function getCustomerOrder(customerId, orderNumber) {
@@ -90,15 +93,26 @@ async function recordShipment(vendorId, vendorOrderNumber, tracking) {
   let result;
   try {
     await session.withTransaction(async () => {
-      const vendorOrder = await VendorOrder.findOne({ vendorId, vendorOrderNumber }).session(session);
-      if (!vendorOrder) throw new OrderError(404, 'VENDOR_ORDER_NOT_FOUND', 'Vendor order not found');
+      const vendorOrder = await VendorOrder.findOne({ vendorId, vendorOrderNumber }).session(
+        session,
+      );
+      if (!vendorOrder)
+        throw new OrderError(404, 'VENDOR_ORDER_NOT_FOUND', 'Vendor order not found');
       if (vendorOrder.status !== 'processing') {
-        throw new OrderError(409, 'ORDER_NOT_READY_TO_SHIP', 'Only paid orders in processing can be shipped');
+        throw new OrderError(
+          409,
+          'ORDER_NOT_READY_TO_SHIP',
+          'Only paid orders in processing can be shipped',
+        );
       }
 
       const parentOrder = await Order.findById(vendorOrder.parentOrderId).session(session);
       if (!parentOrder || parentOrder.paymentStatus !== 'paid') {
-        throw new OrderError(409, 'PAYMENT_NOT_CONFIRMED', 'Order payment must be confirmed before shipment');
+        throw new OrderError(
+          409,
+          'PAYMENT_NOT_CONFIRMED',
+          'Order payment must be confirmed before shipment',
+        );
       }
 
       const shippedAt = new Date();
@@ -107,10 +121,15 @@ async function recordShipment(vendorId, vendorOrderNumber, tracking) {
       vendorOrder.shipping.tracking.push({ ...tracking, shippedAt });
       await vendorOrder.save({ session });
 
-      const siblingOrders = await VendorOrder.find({ parentOrderId: parentOrder._id }).session(session);
-      const allShipped = siblingOrders.length > 0
-        && siblingOrders.every((item) => ['shipped', 'delivered'].includes(item.status));
-      const anyShipped = siblingOrders.some((item) => ['shipped', 'delivered'].includes(item.status));
+      const siblingOrders = await VendorOrder.find({ parentOrderId: parentOrder._id }).session(
+        session,
+      );
+      const allShipped =
+        siblingOrders.length > 0 &&
+        siblingOrders.every((item) => ['shipped', 'delivered'].includes(item.status));
+      const anyShipped = siblingOrders.some((item) =>
+        ['shipped', 'delivered'].includes(item.status),
+      );
       if (anyShipped && ['paid', 'partially_fulfilled'].includes(parentOrder.status)) {
         parentOrder.status = allShipped ? 'fulfilled' : 'partially_fulfilled';
         await parentOrder.save({ session });
