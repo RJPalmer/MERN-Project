@@ -14,6 +14,7 @@ function ProductDetail({ vendorSlug, productSlug }: ProductDetailProps) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [requestVersion, setRequestVersion] = useState(0)
 
   useEffect(() => {
     let active = true
@@ -35,7 +36,14 @@ function ProductDetail({ vendorSlug, productSlug }: ProductDetailProps) {
     return () => {
       active = false
     }
-  }, [vendorSlug, productSlug])
+  }, [vendorSlug, productSlug, requestVersion])
+
+  function retry() {
+    setError('')
+    setProduct(null)
+    setLoading(true)
+    setRequestVersion((version) => version + 1)
+  }
 
   const variant = product?.variants.find((item) => item.id === selectedVariantId) || product?.variants[0]
   const images = product?.media.filter((media) => media.type === 'image') || []
@@ -54,11 +62,12 @@ function ProductDetail({ vendorSlug, productSlug }: ProductDetailProps) {
       </header>
 
       {loading ? (
-        <p className="detail-message">Loading product…</p>
+        <p className="detail-message" role="status" aria-live="polite">Loading product…</p>
       ) : error || !product ? (
         <section className="detail-message" role="alert">
           <h1>We couldn’t find that product.</h1>
           <p>{error || 'This product may have been removed or is no longer available.'}</p>
+          {error && <button className="button detail-retry" onClick={retry} type="button">Try again</button>}
           <a className="button" href="/products">Browse products</a>
         </section>
       ) : (

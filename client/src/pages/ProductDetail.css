@@ -181,6 +181,12 @@
   margin: 16px 0 24px;
 }
 
+.detail-retry {
+  cursor: pointer;
+  font: inherit;
+  margin-right: 10px;
+}
+
 @media (max-width: 760px) {
   .detail-breadcrumb {
     margin: 24px auto;

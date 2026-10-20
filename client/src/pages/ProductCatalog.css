@@ -70,6 +70,14 @@
   color: #9c3b2e;
 }
 
+.catalog-error button {
+  border: 0;
+  background: none;
+  color: #69734d;
+  cursor: pointer;
+  padding: 0;
+}
+
 .catalog-result-count {
   color: #6f7065;
   font-size: 13px;

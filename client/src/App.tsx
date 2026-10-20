@@ -18,14 +18,14 @@ function App() {
           market<span>place</span>
         </a>
         <nav className="primary-nav" aria-label="Main navigation">
-          <a href="#discover">Discover</a>
+          <a href="/products">Discover</a>
           <a href="#how-it-works">How it works</a>
         </nav>
         <div className="header-actions">
           <a className="sign-in" href="#sign-in">
             Sign in
           </a>
-          <a className="button button-small" href="#get-started">
+          <a className="button button-small" href="/products">
             Get started
           </a>
         </div>
@@ -41,7 +41,7 @@ function App() {
               One marketplace, more ways to find your next favorite.
             </p>
             <div className="hero-actions">
-              <a className="button" href="#get-started">
+              <a className="button" href="/products">
                 Explore the marketplace <span aria-hidden="true">↗</span>
               </a>
               <a className="text-link" href="#how-it-works">

@@ -41,6 +41,7 @@ function ProductCatalog() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
+  const [requestVersion, setRequestVersion] = useState(0)
 
   useEffect(() => {
     let active = true
@@ -62,7 +63,7 @@ function ProductCatalog() {
     return () => {
       active = false
     }
-  }, [query, vendor])
+  }, [query, vendor, requestVersion])
 
   async function loadMore() {
     if (!nextCursor || loadingMore) return
@@ -80,6 +81,16 @@ function ProductCatalog() {
     }
   }
 
+  function retry() {
+    setError('')
+    if (products.length === 0 || !nextCursor) {
+      setLoading(true)
+      setRequestVersion((version) => version + 1)
+    } else {
+      void loadMore()
+    }
+  }
+
   return (
     <main className="catalog-page">
       <header className="catalog-header">
@@ -91,7 +102,7 @@ function ProductCatalog() {
         </a>
       </header>
 
-      <section className="catalog-content" aria-labelledby="catalog-title">
+      <section className="catalog-content" aria-labelledby="catalog-title" aria-busy={loading}>
         <p className="eyebrow">The marketplace</p>
         <h1 id="catalog-title">Discover something different.</h1>
         <p className="catalog-intro">Shop independent vendors and the products they’re proud to make.</p>
@@ -115,15 +126,20 @@ function ProductCatalog() {
           </button>
         </form>
 
-        {error && <p className="catalog-error" role="alert">{error}</p>}
+        {error && (
+          <div className="catalog-error" role="alert">
+            <p>{error}</p>
+            <button className="text-link" type="button" onClick={retry}>Try again</button>
+          </div>
+        )}
         {loading ? (
-          <p className="catalog-message">Loading products…</p>
-        ) : products.length === 0 ? (
+          <p className="catalog-message" role="status" aria-live="polite">Loading products…</p>
+        ) : products.length === 0 && !error ? (
           <p className="catalog-message">No products found. Try a different search.</p>
         ) : (
           <>
-            <p className="catalog-result-count">Showing {products.length} products</p>
-            <div className="product-grid">
+            {products.length > 0 && <p className="catalog-result-count">Showing {products.length} products</p>}
+            {products.length > 0 && <div className="product-grid">
               {products.map((product) => {
                 const image = product.media.find((media) => media.type === 'image')
 
@@ -151,7 +167,8 @@ function ProductCatalog() {
                   </a>
                 )
               })}
-            </div>
+            </div>}
+            {loadingMore && <p className="catalog-message" role="status">Loading more products…</p>}
             {nextCursor && (
               <button className="button catalog-more" type="button" onClick={loadMore} disabled={loadingMore}>
                 {loadingMore ? 'Loading…' : 'Load more'}
