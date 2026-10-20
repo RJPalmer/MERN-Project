@@ -2,7 +2,7 @@
 
 A MERN-based marketplace backend for customers, vendors, and administrators. The current codebase contains an Express REST API with MongoDB persistence, Redis support, authentication, catalog and vendor operations, cart and checkout quote handling, inventory management, and customer/vendor order endpoints.
 
-> **Project status:** Backend development is in progress. The `client` directory is currently only a placeholder; a complete frontend is not yet included. Automated backend tests are not configured yet.
+> **Project status:** Backend development is in progress. The client now has a React, Vite, and TypeScript starter with a responsive marketplace landing shell; its buyer, vendor, and admin workflows are still to be built. Automated backend tests are not configured yet.
 
 ## Contents
 
@@ -34,10 +34,10 @@ MongoDB is configured as a replica set because the backend uses transactional in
 
    Replace `<REPOSITORY_URL>` and `<REPOSITORY_DIRECTORY>` with the values for your checkout.
 
-2. Install server dependencies from the repository root:
+2. Install dependencies for both workspaces from the repository root:
 
    ```bash
-   npm install --workspace server
+   npm install
    ```
 
 3. Create the local server environment file:
@@ -59,6 +59,14 @@ MongoDB is configured as a replica set because the backend uses transactional in
    ```
 
 6. Start the API using one of the commands in [Run the API](#run-the-api).
+
+7. In another terminal, start the client:
+
+   ```bash
+   npm run dev --workspace client
+   ```
+
+   Vite serves the client at `http://localhost:5173` by default.
 
 ## Environment configuration
 
@@ -147,10 +155,29 @@ Check formatting without changing files:
 npm run format:check --workspace server
 ```
 
+## Run the client
+
+Configure the API base URL for the client, then start the Vite development server:
+
+```bash
+cp client/.env.example client/.env
+npm run dev --workspace client
+```
+
+The current starter UI is static. Product browsing, authentication, and other screens will be connected to the API as those client features are implemented.
+
+Create a production build with:
+
+```bash
+npm run build --workspace client
+```
+
 ## Project layout
 
 ```text
-client/                  Frontend placeholder and environment example
+client/                  React, Vite, and TypeScript application
+  src/                   Client application and styles
+  .env.example           Client API URL template
 docs/                    Architecture and development incident notes
 server/
   scripts/               Server administration scripts
