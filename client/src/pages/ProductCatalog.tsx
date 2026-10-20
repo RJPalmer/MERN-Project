@@ -4,6 +4,34 @@ import './ProductCatalog.css'
 
 const PAGE_SIZE = 20
 
+function getPrice(product: StorefrontProduct) {
+  const prices = product.variants.map((variant) => {
+    const price = variant.pricing.sale || variant.pricing.list
+    return { amount: price.amount, currency: price.currency }
+  })
+  const firstPrice = prices[0]
+  if (!firstPrice) return null
+
+  const currency = firstPrice.currency
+  const matchingPrices = prices.filter((price) => price.currency === currency)
+  const lowestPrice = matchingPrices.reduce(
+    (lowest, price) => (price.amount < lowest.amount ? price : lowest),
+    firstPrice,
+  )
+
+  const fractionDigits = new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency,
+  }).resolvedOptions().maximumFractionDigits ?? 2
+  const divisor = 10 ** fractionDigits
+  const formattedPrice = new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency,
+  }).format(lowestPrice.amount / divisor)
+
+  return `From ${formattedPrice}`
+}
+
 function ProductCatalog() {
   const searchParams = new URLSearchParams(window.location.search)
   const query = searchParams.get('q') || ''
@@ -95,14 +123,34 @@ function ProductCatalog() {
         ) : (
           <>
             <p className="catalog-result-count">Showing {products.length} products</p>
-            <div className="catalog-list">
-              {products.map((product) => (
-                <article className="catalog-list-item" key={product.id}>
-                  <h2>{product.title}</h2>
-                  <p>{product.vendor.displayName}</p>
-                  {product.shortDescription && <p>{product.shortDescription}</p>}
-                </article>
-              ))}
+            <div className="product-grid">
+              {products.map((product) => {
+                const image = product.media.find((media) => media.type === 'image')
+
+                return (
+                  <a
+                    className="product-card"
+                    href={`/products/${encodeURIComponent(product.vendor.slug)}/${encodeURIComponent(product.slug)}`}
+                    key={product.id}
+                  >
+                    <div className="product-card-image">
+                      {image ? (
+                        <img src={image.url} alt={image.alt || product.title} loading="lazy" />
+                      ) : (
+                        <span className="image-placeholder" aria-hidden="true">No image yet</span>
+                      )}
+                    </div>
+                    <div className="product-card-copy">
+                      <p className="product-vendor">{product.vendor.displayName}</p>
+                      <h2>{product.title}</h2>
+                      {product.shortDescription && (
+                        <p className="product-description">{product.shortDescription}</p>
+                      )}
+                      <p className="product-price">{getPrice(product) || 'Price unavailable'}</p>
+                    </div>
+                  </a>
+                )
+              })}
             </div>
             {nextCursor && (
               <button className="button catalog-more" type="button" onClick={loadMore} disabled={loadingMore}>
