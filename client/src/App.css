@@ -27,6 +27,41 @@
   border-bottom: 1px solid var(--line);
 }
 
+.header-greeting {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.header-signout {
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  padding: 0;
+}
+
+.header-signout:hover {
+  color: var(--olive);
+}
+
+.header-error {
+  color: #9c3b2e;
+  font-size: 11px;
+  margin: 0;
+}
+
+.protected-placeholder {
+  min-height: 100vh;
+  text-align: center;
+}
+
+.protected-placeholder > p {
+  color: var(--muted);
+  padding: 80px 24px;
+}
+
 .wordmark {
   color: var(--ink);
   font-family: Georgia, 'Times New Roman', serif;
@@ -341,6 +376,10 @@ h1 {
 
   .header-actions {
     gap: 17px;
+  }
+
+  .header-greeting {
+    display: none;
   }
 
   .hero {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getStorefrontProducts, type StorefrontProduct } from '../lib/api'
+import SiteHeader from '../components/SiteHeader'
 import './ProductCatalog.css'
 
 const PAGE_SIZE = 20
@@ -93,14 +94,7 @@ function ProductCatalog() {
 
   return (
     <main className="catalog-page">
-      <header className="catalog-header">
-        <a className="wordmark" href="/" aria-label="Marketplace home">
-          market<span>place</span>
-        </a>
-        <a className="catalog-back" href="/">
-          Back to home
-        </a>
-      </header>
+      <SiteHeader className="site-header catalog-header" />
 
       <section className="catalog-content" aria-labelledby="catalog-title" aria-busy={loading}>
         <p className="eyebrow">The marketplace</p>

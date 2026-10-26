@@ -2,6 +2,8 @@ import './App.css'
 import ProductCatalog from './pages/ProductCatalog'
 import ProductDetail from './pages/ProductDetail'
 import AuthPage from './pages/AuthPage'
+import SiteHeader from './components/SiteHeader'
+import { RequireAuth } from './auth/RequireAuth'
 
 const copyrightYear = new Date().getFullYear()
 
@@ -17,26 +19,20 @@ function App() {
   if (pathSegments[0] === 'products' && pathSegments.length === 3) {
     return <ProductDetail vendorSlug={pathSegments[1]} productSlug={pathSegments[2]} />
   }
+  if (pathSegments.length === 1 && pathSegments[0] === 'cart') {
+    return (
+      <RequireAuth>
+        <main className="protected-placeholder">
+          <SiteHeader />
+          <p>Your cart will be available here.</p>
+        </main>
+      </RequireAuth>
+    )
+  }
 
   return (
     <div className="app-shell">
-      <header className="site-header">
-        <a className="wordmark" href="/" aria-label="Market home">
-          market<span>place</span>
-        </a>
-        <nav className="primary-nav" aria-label="Main navigation">
-          <a href="/products">Discover</a>
-          <a href="#how-it-works">How it works</a>
-        </nav>
-        <div className="header-actions">
-          <a className="sign-in" href="/sign-in">
-            Sign in
-          </a>
-          <a className="button button-small" href="/products">
-            Get started
-          </a>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main>
         <section className="hero" id="discover">

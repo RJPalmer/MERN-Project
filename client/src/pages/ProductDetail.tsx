@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getStorefrontProduct, type StorefrontProduct } from '../lib/api'
 import { formatMoney } from '../lib/formatters'
+import SiteHeader from '../components/SiteHeader'
 import './ProductDetail.css'
 
 type ProductDetailProps = {
@@ -52,14 +53,7 @@ function ProductDetail({ vendorSlug, productSlug }: ProductDetailProps) {
 
   return (
     <main className="detail-page">
-      <header className="catalog-header">
-        <a className="wordmark" href="/" aria-label="Marketplace home">
-          market<span>place</span>
-        </a>
-        <a className="catalog-back" href="/products">
-          Back to products
-        </a>
-      </header>
+      <SiteHeader className="site-header catalog-header" />
 
       {loading ? (
         <p className="detail-message" role="status" aria-live="polite">Loading product…</p>
