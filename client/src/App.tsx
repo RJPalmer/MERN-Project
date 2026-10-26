@@ -1,11 +1,18 @@
 import './App.css'
 import ProductCatalog from './pages/ProductCatalog'
 import ProductDetail from './pages/ProductDetail'
+import AuthPage from './pages/AuthPage'
 
 const copyrightYear = new Date().getFullYear()
 
 function App() {
   const pathSegments = window.location.pathname.split('/').filter(Boolean)
+  if (pathSegments.length === 1 && pathSegments[0] === 'sign-in') {
+    return <AuthPage mode="sign-in" />
+  }
+  if (pathSegments.length === 1 && pathSegments[0] === 'register') {
+    return <AuthPage mode="register" />
+  }
   if (pathSegments[0] === 'products' && pathSegments.length === 2) return <ProductCatalog />
   if (pathSegments[0] === 'products' && pathSegments.length === 3) {
     return <ProductDetail vendorSlug={pathSegments[1]} productSlug={pathSegments[2]} />
@@ -22,7 +29,7 @@ function App() {
           <a href="#how-it-works">How it works</a>
         </nav>
         <div className="header-actions">
-          <a className="sign-in" href="#sign-in">
+          <a className="sign-in" href="/sign-in">
             Sign in
           </a>
           <a className="button button-small" href="/products">
