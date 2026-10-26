@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useAuth } from '../auth/useAuth'
+import { useCart } from '../cart/useCart'
 
 function SiteHeader({ className = 'site-header' }: { className?: string }) {
   const { user, signOut } = useAuth()
+  const { itemCount } = useCart()
   const [error, setError] = useState('')
 
   async function handleSignOut() {
@@ -28,7 +30,7 @@ function SiteHeader({ className = 'site-header' }: { className?: string }) {
         {user ? (
           <>
             <span className="header-greeting">Hi, {user.displayName}</span>
-            <a className="sign-in" href="/cart">Cart</a>
+            <a className="sign-in" href="/cart">Cart ({itemCount})</a>
             <button className="header-signout" onClick={handleSignOut} type="button">Sign out</button>
           </>
         ) : (

@@ -4,6 +4,7 @@ import ProductDetail from './pages/ProductDetail'
 import AuthPage from './pages/AuthPage'
 import SiteHeader from './components/SiteHeader'
 import { RequireAuth } from './auth/RequireAuth'
+import CartPage from './pages/CartPage'
 
 const copyrightYear = new Date().getFullYear()
 
@@ -22,10 +23,7 @@ function App() {
   if (pathSegments.length === 1 && pathSegments[0] === 'cart') {
     return (
       <RequireAuth>
-        <main className="protected-placeholder">
-          <SiteHeader />
-          <p>Your cart will be available here.</p>
-        </main>
+        <CartPage />
       </RequireAuth>
     )
   }

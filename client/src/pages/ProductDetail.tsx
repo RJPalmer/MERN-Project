@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { getStorefrontProduct, type StorefrontProduct } from '../lib/api'
 import { formatMoney } from '../lib/formatters'
+import { useAuth } from '../auth/useAuth'
+import { useCart } from '../cart/useCart'
 import SiteHeader from '../components/SiteHeader'
 import './ProductDetail.css'
 
@@ -10,11 +12,17 @@ type ProductDetailProps = {
 }
 
 function ProductDetail({ vendorSlug, productSlug }: ProductDetailProps) {
+  const { user, status: authStatus } = useAuth()
+  const { cart, status: cartStatus, setItemQuantity } = useCart()
   const [product, setProduct] = useState<StorefrontProduct | null>(null)
   const [selectedVariantId, setSelectedVariantId] = useState('')
   const [selectedImage, setSelectedImage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [quantity, setQuantity] = useState(1)
+  const [cartFeedback, setCartFeedback] = useState('')
+  const [cartError, setCartError] = useState('')
+  const [addingToCart, setAddingToCart] = useState(false)
   const [requestVersion, setRequestVersion] = useState(0)
 
   useEffect(() => {
@@ -50,6 +58,35 @@ function ProductDetail({ vendorSlug, productSlug }: ProductDetailProps) {
   const images = product?.media.filter((media) => media.type === 'image') || []
   const image = images[selectedImage]
   const price = variant?.pricing.sale || variant?.pricing.list
+  const currentQuantity =
+    cart?.items.find((item) => item.variantId === variant?.id)?.quantity || 0
+  const availableToAdd =
+    variant?.available === undefined ? 9999 : Math.max(0, variant.available - currentQuantity)
+
+  async function handleAddToCart() {
+    if (!user) {
+      const returnTo = `${window.location.pathname}${window.location.search}`
+      window.location.assign(`/sign-in?returnTo=${encodeURIComponent(returnTo)}`)
+      return
+    }
+    if (!variant || variant.available === 0 || quantity > availableToAdd) return
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      setCartError('Choose a quantity of at least one.')
+      return
+    }
+
+    setAddingToCart(true)
+    setCartFeedback('')
+    setCartError('')
+    try {
+      await setItemQuantity(variant.id, currentQuantity + quantity)
+      setCartFeedback(`${quantity} ${quantity === 1 ? 'item' : 'items'} added to your cart.`)
+    } catch (requestError) {
+      setCartError(requestError instanceof Error ? requestError.message : 'Unable to add this item.')
+    } finally {
+      setAddingToCart(false)
+    }
+  }
 
   return (
     <main className="detail-page">
@@ -114,7 +151,11 @@ function ProductDetail({ vendorSlug, productSlug }: ProductDetailProps) {
                 <label className="variant-picker">
                   <span>Choose an option</span>
                   <select
-                    onChange={(event) => setSelectedVariantId(event.target.value)}
+                    onChange={(event) => {
+                      setSelectedVariantId(event.target.value)
+                      setQuantity(1)
+                      setCartFeedback('')
+                    }}
                     value={variant?.id || ''}
                   >
                     {product.variants.map((item) => (
@@ -131,6 +172,46 @@ function ProductDetail({ vendorSlug, productSlug }: ProductDetailProps) {
                   {variant.available === 0 ? 'Currently unavailable' : 'In stock'}
                 </p>
               )}
+
+              {variant && variant.available !== undefined && currentQuantity >= variant.available && (
+                <p className="detail-stock">All available units are already in your cart.</p>
+              )}
+
+              <label className="detail-quantity">
+                <span>Quantity</span>
+                <input
+                  max={Math.max(1, availableToAdd)}
+                  min={1}
+                  onChange={(event) => setQuantity(Number(event.target.value))}
+                  type="number"
+                  value={quantity}
+                />
+              </label>
+
+              <button
+                className="button detail-add-button"
+                disabled={
+                  addingToCart ||
+                  authStatus === 'loading' ||
+                  (Boolean(user) && cartStatus === 'loading') ||
+                  !variant ||
+                  variant.available === 0 ||
+                  availableToAdd === 0 ||
+                  quantity > availableToAdd
+                }
+                onClick={handleAddToCart}
+                type="button"
+              >
+                {addingToCart
+                  ? 'Adding…'
+                  : user
+                    ? 'Add to cart'
+                    : authStatus === 'loading'
+                      ? 'Restoring session…'
+                      : 'Sign in to add to cart'}
+              </button>
+              {cartFeedback && <p className="cart-feedback" role="status">{cartFeedback}</p>}
+              {cartError && <p className="cart-error" role="alert">{cartError}</p>}
 
               {product.description && <p className="detail-description">{product.description}</p>}
 
