@@ -35,6 +35,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  useEffect(() => {
+    function handleExpiredSession() {
+      setUser(null)
+      setStatus('anonymous')
+    }
+
+    window.addEventListener('marketplace:auth-expired', handleExpiredSession)
+    return () => window.removeEventListener('marketplace:auth-expired', handleExpiredSession)
+  }, [])
+
   async function signIn(email: string, password: string) {
     const session = await loginRequest(email, password)
     setUser(session.user)

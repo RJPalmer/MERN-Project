@@ -48,6 +48,33 @@ export type ProductPage = {
   nextCursor: string | null
 }
 
+export type CartItem = {
+  id: string
+  variantId: string | null
+  vendorId: string
+  quantity: number
+  addedAt?: string
+  available: boolean
+  issue: string | null
+  product: { title: string; slug: string; media: ProductMedia[] } | null
+  vendor: { slug: string; displayName: string } | null
+  variant: {
+    title: string
+    sku: string
+    optionValues: Array<{ name: string; value: string }>
+  } | null
+  unitPrice: Money
+  lineSubtotal: number | null
+}
+
+export type Cart = {
+  id: string
+  currency: string
+  items: CartItem[]
+  subtotal: Money
+  updatedAt: string
+}
+
 export type User = {
   id: string
   email: string
@@ -137,14 +164,18 @@ export async function requestJson<T>(path: string, options: RequestOptions = {})
       throw error
     }
 
+    let refreshedToken: string
     try {
       const session =
         accessToken && accessToken !== tokenUsed ? { accessToken } : await refreshAuthSession()
-      return await fetchJson<T>(path, options, session.accessToken)
+      refreshedToken = session.accessToken
     } catch (refreshError) {
       setAccessToken(null)
+      window.dispatchEvent(new Event('marketplace:auth-expired'))
       throw refreshError
     }
+
+    return fetchJson<T>(path, options, refreshedToken)
   }
 }
 
@@ -216,4 +247,34 @@ export async function getStorefrontProduct(
     `/products/${encodeURIComponent(vendorSlug)}/${encodeURIComponent(productSlug)}`,
   )
   return product.product
+}
+
+export async function getCart(): Promise<Cart> {
+  const result = await requestJson<{ cart: Cart }>('/cart', { authenticated: true })
+  return result.cart
+}
+
+export async function setCartItemQuantity(variantId: string, quantity: number): Promise<Cart> {
+  const result = await requestJson<{ cart: Cart }>(`/cart/items/${encodeURIComponent(variantId)}`, {
+    method: 'PUT',
+    body: { quantity },
+    authenticated: true,
+  })
+  return result.cart
+}
+
+export async function removeCartItem(variantId: string): Promise<Cart> {
+  const result = await requestJson<{ cart: Cart }>(`/cart/items/${encodeURIComponent(variantId)}`, {
+    method: 'DELETE',
+    authenticated: true,
+  })
+  return result.cart
+}
+
+export async function clearCart(): Promise<Cart> {
+  const result = await requestJson<{ cart: Cart }>('/cart', {
+    method: 'DELETE',
+    authenticated: true,
+  })
+  return result.cart
 }
