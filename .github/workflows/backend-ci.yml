@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   backend:
-    name: Backend syntax and formatting
+    name: Backend checks
     runs-on: ubuntu-latest
 
     steps:
@@ -31,6 +31,9 @@ jobs:
 
       - name: Check JavaScript syntax
         run: find server/src server/scripts -type f -name '*.js' -print0 | xargs -0 -r -n 1 node --check
+
+      - name: Run backend unit tests
+        run: npm test
 
       - name: Check formatting
         run: npx --yes prettier@3.6.2 --check "server/src/**/*.js" "server/scripts/**/*.js"
