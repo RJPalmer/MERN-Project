@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Marketplace | A home for independent makers</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #18352e;
+        --muted: #586b64;
+        --green: #315f50;
+        --coral: #bd6046;
+        --paper: #f7f5ee;
+        --line: #dce3d9;
+        --white: #fffefa;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: #e8ece5;
+        color: var(--ink);
+        font: 15px/1.45 "Aptos", "Segoe UI", Arial, sans-serif;
+      }
+      .page {
+        width: min(8.5in, 100%);
+        min-height: 11in;
+        margin: 24px auto;
+        padding: 0.55in 0.67in 0.45in;
+        background: var(--paper);
+        box-shadow: 0 12px 48px #18352e1b;
+        display: flex;
+        flex-direction: column;
+      }
+      .topline {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--green);
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+      }
+      .wordmark { font-size: 13px; letter-spacing: -.04em; text-transform: lowercase; }
+      .wordmark span { color: var(--coral); }
+      .hero {
+        margin-top: 27px;
+        padding: 25px 30px 24px;
+        border-radius: 18px;
+        color: #fffdf6;
+        background: var(--green);
+        position: relative;
+        overflow: hidden;
+      }
+      .hero:after {
+        content: "";
+        position: absolute;
+        width: 195px;
+        height: 195px;
+        border-radius: 50%;
+        border: 1px solid #ffffff30;
+        right: -34px;
+        top: -76px;
+        box-shadow: 0 0 0 20px #ffffff0c, 0 0 0 42px #ffffff0a;
+      }
+      .eyebrow { margin: 0 0 9px; color: #e6c8a0; font-size: 10px; font-weight: 750; letter-spacing: .16em; text-transform: uppercase; }
+      h1 { max-width: 580px; margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 38px; line-height: 1.04; font-weight: 500; letter-spacing: -.035em; }
+      .dek { max-width: 530px; margin: 12px 0 0; color: #e5ede6; font-size: 14px; line-height: 1.55; }
+      .section-head { margin: 23px 0 11px; display: flex; align-items: baseline; gap: 10px; }
+      .section-head h2 { margin: 0; font: 500 21px/1.1 Georgia, "Times New Roman", serif; letter-spacing: -.02em; }
+      .section-head p { margin: 0; color: var(--muted); font-size: 11px; }
+      .features { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+      .feature {
+        min-height: 94px;
+        padding: 13px 15px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--white);
+      }
+      .feature-top { display: flex; align-items: center; gap: 9px; margin-bottom: 5px; }
+      .icon { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 8px; background: #e7eee7; color: var(--green); font-size: 13px; }
+      .feature h3 { margin: 0; font-size: 13px; line-height: 1.2; }
+      .feature p { margin: 0; padding-left: 34px; color: var(--muted); font-size: 11.5px; line-height: 1.4; }
+      .use-cases { margin-top: 21px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .use-case { padding: 15px 16px; border-radius: 12px; background: #efe8da; }
+      .use-case:last-child { background: #e5ece4; }
+      .use-case .label { margin: 0 0 7px; color: var(--coral); font-size: 9px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+      .use-case:last-child .label { color: var(--green); }
+      .use-case h3 { margin: 0 0 5px; font: 500 17px/1.15 Georgia, "Times New Roman", serif; }
+      .use-case p { margin: 0; color: #4f625b; font-size: 11.5px; line-height: 1.45; }
+      .flow { margin-top: 19px; padding: 14px 17px 13px; border-left: 3px solid var(--coral); background: #fffefa; }
+      .flow-title { margin: 0 0 8px; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+      .steps { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--green); font-size: 11px; font-weight: 700; }
+      .steps span { white-space: nowrap; }
+      .steps b { color: #be8a66; font-size: 15px; font-weight: 400; }
+      .foot { margin-top: auto; padding-top: 15px; display: flex; justify-content: space-between; gap: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 9.5px; line-height: 1.35; }
+      .foot strong { color: var(--ink); }
+      @media print {
+        @page { size: letter; margin: 0; }
+        body { background: white; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        .page { width: 8.5in; min-height: 11in; margin: 0; box-shadow: none; }
+      }
+      @media (max-width: 640px) {
+        .page { min-height: 100vh; margin: 0; padding: 28px 22px; }
+        h1 { font-size: 33px; }
+        .section-head { display: block; }
+        .section-head p { margin-top: 4px; }
+        .features, .use-cases { grid-template-columns: 1fr; }
+        .steps { flex-wrap: wrap; justify-content: flex-start; }
+        .foot { flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="topline">
+        <div class="wordmark">market<span>place</span></div>
+        <div>Independent finds · Thoughtfully sourced</div>
+      </div>
+
+      <header class="hero">
+        <p class="eyebrow">A marketplace with more to offer</p>
+        <h1>Discover the makers<br />behind what you buy.</h1>
+        <p class="dek">One considered place to explore independent vendors, find products that fit, and keep the details of buying organized.</p>
+      </header>
+
+      <section aria-labelledby="features-title">
+        <div class="section-head">
+          <h2 id="features-title">From first look to order history</h2>
+          <p>A connected customer experience, supported by marketplace operations.</p>
+        </div>
+        <div class="features">
+          <article class="feature">
+            <div class="feature-top"><span class="icon">⌕</span><h3>Find something different</h3></div>
+            <p>Search a product catalog, explore vendor offerings, and view detailed product and variant information.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-top"><span class="icon">＋</span><h3>Keep a cart in sync</h3></div>
+            <p>Add products and manage quantities with availability and pricing reflected in the customer cart.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-top"><span class="icon">⌂</span><h3>Save delivery details</h3></div>
+            <p>Manage customer addresses and choose a saved destination when reviewing a checkout quote.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-top"><span class="icon">↗</span><h3>See the order picture</h3></div>
+            <p>Review a quote with vendor-level items, stock, shipping estimates, and totals, then revisit order details.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="use-cases" aria-label="Possible use cases">
+        <article class="use-case">
+          <p class="label">For shoppers</p>
+          <h3>Make discovery feel personal</h3>
+          <p>A shopper looking beyond mass-market staples can browse independent makers, compare product options, save an address, and keep track of past orders.</p>
+        </article>
+        <article class="use-case">
+          <p class="label">For marketplace teams</p>
+          <h3>Coordinate a growing catalog</h3>
+          <p>A multi-vendor operator can support vendor onboarding and review, product approvals, inventory visibility, and vendor order workflows through the platform API.</p>
+        </article>
+      </section>
+
+      <section class="flow" aria-label="Customer journey">
+        <p class="flow-title">A simple path through the storefront</p>
+        <div class="steps"><span>Discover</span><b>→</b><span>Choose</span><b>→</b><span>Build a cart</span><b>→</b><span>Review a quote</span><b>→</b><span>Track orders</span></div>
+      </section>
+
+      <footer class="foot">
+        <span><strong>Built for multi-vendor commerce.</strong> A customer storefront backed by catalog, cart, inventory, vendor, and order services.</span>
+        <span>Checkout quote review is available. Payment and order placement are in development.</span>
+      </footer>
+    </main>
+  </body>
+</html>
