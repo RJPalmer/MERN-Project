@@ -21,6 +21,6 @@
   "license": "ISC",
   "author": "Robert Palmer",
   "scripts": {
-    "test": "echo \"No tests configured yet\""
+    "test": "npm test --workspace server"
   }
 }
