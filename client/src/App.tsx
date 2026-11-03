@@ -7,6 +7,8 @@ import { RequireAuth } from './auth/RequireAuth'
 import CartPage from './pages/CartPage'
 import AddressBookPage from './pages/AddressBookPage'
 import CheckoutPage from './pages/CheckoutPage'
+import OrderHistoryPage from './pages/OrderHistoryPage'
+import OrderDetailPage from './pages/OrderDetailPage'
 
 const copyrightYear = new Date().getFullYear()
 
@@ -40,6 +42,20 @@ function App() {
     return (
       <RequireAuth>
         <CheckoutPage />
+      </RequireAuth>
+    )
+  }
+  if (pathSegments.length === 1 && pathSegments[0] === 'orders') {
+    return (
+      <RequireAuth>
+        <OrderHistoryPage />
+      </RequireAuth>
+    )
+  }
+  if (pathSegments.length === 2 && pathSegments[0] === 'orders') {
+    return (
+      <RequireAuth>
+        <OrderDetailPage orderNumber={decodeURIComponent(pathSegments[1])} />
       </RequireAuth>
     )
   }

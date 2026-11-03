@@ -30,6 +30,7 @@ function SiteHeader({ className = 'site-header' }: { className?: string }) {
         {user ? (
           <>
             <span className="header-greeting">Hi, {user.displayName}</span>
+            <a className="sign-in" href="/orders">Orders</a>
             <a className="sign-in" href="/cart">Cart ({itemCount})</a>
             <button className="header-signout" onClick={handleSignOut} type="button">Sign out</button>
           </>

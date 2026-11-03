@@ -144,6 +144,98 @@ export type CheckoutQuote = {
   blockers: CheckoutBlocker[]
 }
 
+export type OrderStatus =
+  | 'pending_payment'
+  | 'paid'
+  | 'partially_fulfilled'
+  | 'fulfilled'
+  | 'cancelled'
+  | 'refunded'
+
+export type VendorOrderSummary = {
+  id: string
+  vendorOrderNumber: string
+  status: string
+  totals: {
+    subtotal: Money
+    discount: Money
+    shipping: Money
+    tax: Money
+    grandTotal: Money
+  }
+}
+
+export type CustomerOrderSummary = {
+  id: string
+  orderNumber: string
+  status: OrderStatus
+  paymentStatus: string
+  currency: string
+  totals: {
+    subtotal: Money
+    discount: Money
+    shipping: Money
+    tax: Money
+    grandTotal: Money
+  }
+  placedAt: string | null
+  createdAt: string
+  vendorOrders: VendorOrderSummary[]
+}
+
+export type OrderAddressSnapshot = {
+  recipientName: string
+  phone: string
+  addressLine1: string
+  addressLine2: string
+  city: string
+  region: string
+  postalCode: string
+  countryCode: string
+}
+
+export type CustomerOrderDetail = Omit<CustomerOrderSummary, 'vendorOrders'> & {
+  shippingAddress: OrderAddressSnapshot
+  billingAddress: OrderAddressSnapshot
+  vendorOrders: Array<
+    Omit<VendorOrderSummary, 'totals'> & {
+      items: Array<{
+        variantId: string
+        productId: string
+        sku: string
+        title: string
+        optionValues: Array<{ name: string; value: string }>
+        image: string
+        quantity: number
+        unitPrice: Money
+        discount: Money
+        tax: Money
+        lineTotal: Money
+      }>
+      shipping: {
+        method: string
+        cost: Money
+        address: OrderAddressSnapshot
+        tracking: Array<{
+          carrier: string
+          number: string
+          url: string
+          shippedAt: string | null
+        }>
+      }
+      totals: VendorOrderSummary['totals'] & {
+        commission: Money
+        vendorNet: Money
+      }
+    }
+  >
+}
+
+export type CustomerOrderPage = {
+  orders: CustomerOrderSummary[]
+  nextCursor: string | null
+}
+
 export type User = {
   id: string
   email: string
@@ -389,4 +481,25 @@ export async function getCheckoutQuote(addressId?: string): Promise<CheckoutQuot
     authenticated: true,
   })
   return result.quote
+}
+
+export async function getCustomerOrders(options: {
+  cursor?: string
+  status?: OrderStatus
+  limit?: number
+} = {}): Promise<CustomerOrderPage> {
+  const params = new URLSearchParams()
+  if (options.cursor) params.set('cursor', options.cursor)
+  if (options.status) params.set('status', options.status)
+  if (options.limit) params.set('limit', String(options.limit))
+  const query = params.size ? `?${params.toString()}` : ''
+  return requestJson<CustomerOrderPage>(`/me/orders${query}`, { authenticated: true })
+}
+
+export async function getCustomerOrder(orderNumber: string): Promise<CustomerOrderDetail> {
+  const result = await requestJson<{ order: CustomerOrderDetail }>(
+    `/me/orders/${encodeURIComponent(orderNumber)}`,
+    { authenticated: true },
+  )
+  return result.order
 }
