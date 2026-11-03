@@ -1,8 +1,8 @@
 # Multi-Vendor Marketplace
 
-A MERN-based marketplace backend for customers, vendors, and administrators. The current codebase contains an Express REST API with MongoDB persistence, Redis support, authentication, catalog and vendor operations, cart and checkout quote handling, inventory management, and customer/vendor order endpoints.
+A MERN-based marketplace for customers, vendors, and administrators. The project includes an Express REST API with MongoDB persistence and Redis support, plus a React, Vite, and TypeScript storefront. The storefront supports product discovery, customer accounts, carts, saved addresses, checkout quote review, and customer order history. Vendor and admin workflows are currently API-only.
 
-> **Project status:** Backend development is in progress. The client now has a React, Vite, and TypeScript starter with a responsive marketplace landing shell; its buyer, vendor, and admin workflows are still to be built. Automated backend tests are not configured yet.
+> **Project status:** Marketplace development is in progress. The customer storefront is connected to the API for browsing, authentication, cart management, address management, checkout quote review, and viewing existing orders. Checkout currently reviews a quote; payment and order placement are not implemented. Vendor and admin experiences are not included in the client. Backend unit tests run with Node's built-in test runner.
 
 ## Contents
 
@@ -86,6 +86,14 @@ JWT_REFRESH_SECRET=<REPLACE_WITH_A_DIFFERENT_RANDOM_SECRET_AT_LEAST_32_CHARACTER
 
 `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` must be different and at least 32 characters long. Keep `server/.env` private; it is ignored by Git. Do not commit real credentials or production secrets.
 
+The client can use the default local API URL or an override in `client/.env`:
+
+```dotenv
+VITE_API_BASE_URL=http://localhost:5000/api/v1
+```
+
+Create it from the example with `cp client/.env.example client/.env`.
+
 ## Run the API
 
 From the repository root, start the API in development mode with Node's watch mode:
@@ -139,7 +147,7 @@ All application endpoints use the `/api/v1` prefix and JSON request/response bod
 | Customer orders | `/api/v1/me/orders` | View order history and order details |
 | Vendor orders | `/api/v1/vendors/:vendorId/orders` | View vendor orders and create shipment records |
 
-For endpoint request shapes and responses, inspect the route schemas in `server/src/modules/` or use the project's API collection if one is available in your checkout.
+For endpoint request shapes and responses, inspect the route schemas in `server/src/modules/` or use the project's API collection if one is available in your checkout. Checkout creates a quote for review; it does not place an order or collect payment.
 
 ## Formatting
 
@@ -164,7 +172,18 @@ cp client/.env.example client/.env
 npm run dev --workspace client
 ```
 
-The current starter UI is static. Product browsing, authentication, and other screens will be connected to the API as those client features are implemented.
+The storefront routes include:
+
+- `/` — marketplace landing page
+- `/products` — searchable product catalog
+- `/products/:vendorSlug/:productSlug` — product details and cart actions
+- `/sign-in` and `/register` — customer authentication
+- `/cart` — authenticated cart
+- `/addresses` — authenticated address book
+- `/checkout` — authenticated checkout quote review
+- `/orders` and `/orders/:orderNumber` — authenticated order history and details
+
+Cart, address, checkout, and order pages require an authenticated customer session. Checkout displays a quote from the API; completing a purchase is not yet available.
 
 Create a production build with:
 
@@ -208,5 +227,6 @@ package.json             Root npm workspace configuration
   npm run admin:promote --workspace server -- <USER_EMAIL>
   ```
 
-- The server's `test` script is currently a placeholder. Add automated tests as backend features mature.
+- Run backend unit tests from the repository root with `npm test` (or `npm test --workspace server`). They use Node's built-in test runner and cover route and schema behavior without requiring live MongoDB or Redis services.
+- The backend CI workflow checks JavaScript syntax, runs the tests, and checks formatting on pull requests that change backend files or root npm configuration.
 - See [`docs/marketplace-architecture.md`](docs/marketplace-architecture.md) for the data model, workflows, API design, and phased delivery plan.
