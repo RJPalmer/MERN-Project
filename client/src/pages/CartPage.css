@@ -184,6 +184,11 @@
   width: 100%;
 }
 
+.cart-checkout {
+  margin-top: 18px;
+  width: 100%;
+}
+
 .cart-status,
 .cart-empty {
   color: #6f7065;

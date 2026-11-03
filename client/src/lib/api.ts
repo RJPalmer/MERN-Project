@@ -75,6 +75,75 @@ export type Cart = {
   updatedAt: string
 }
 
+export type CustomerAddress = {
+  id: string
+  _id?: string
+  label: string
+  recipientName: string
+  phone: string
+  addressLine1: string
+  addressLine2: string
+  city: string
+  region: string
+  postalCode: string
+  countryCode: string
+  isDefaultShipping: boolean
+  isDefaultBilling: boolean
+}
+
+export type AddressInput = Omit<CustomerAddress, 'id' | '_id'>
+
+export type CheckoutVendor = {
+  vendor: { id: string; slug: string; displayName: string }
+  items: Array<{
+    variantId: string
+    productTitle: string
+    variantTitle: string
+    sku: string
+    quantity: number
+    unitPrice: Money
+    lineSubtotal: Money
+    available: number
+    inStock: boolean
+  }>
+  subtotal: Money
+  shipping: Money | null
+  tax: Money | null
+}
+
+export type CheckoutBlocker = {
+  code: string
+  message: string
+  vendorId?: string
+  variantId?: string
+}
+
+export type CheckoutQuote = {
+  type: 'merchandise_preview'
+  createdAt: string
+  currency: string
+  shippingAddress: Pick<
+    CustomerAddress,
+    | 'id'
+    | 'recipientName'
+    | 'addressLine1'
+    | 'addressLine2'
+    | 'city'
+    | 'region'
+    | 'postalCode'
+    | 'countryCode'
+  > | null
+  vendors: CheckoutVendor[]
+  subtotal: Money
+  totalBeforeTax: Money | null
+  discount: Money
+  shipping: Money | null
+  tax: Money | null
+  total: Money | null
+  readyForPayment: boolean
+  blockers: CheckoutBlocker[]
+}
+
 export type User = {
   id: string
   email: string
@@ -277,4 +346,47 @@ export async function clearCart(): Promise<Cart> {
     authenticated: true,
   })
   return result.cart
+}
+
+export async function getAddresses(): Promise<CustomerAddress[]> {
+  const result = await requestJson<{ addresses: CustomerAddress[] }>('/me/addresses', {
+    authenticated: true,
+  })
+  return result.addresses
+}
+
+export async function createAddress(input: AddressInput): Promise<CustomerAddress> {
+  const result = await requestJson<{ address: CustomerAddress }>('/me/addresses', {
+    method: 'POST',
+    body: input,
+    authenticated: true,
+  })
+  return result.address
+}
+
+export async function updateAddress(
+  addressId: string,
+  input: AddressInput,
+): Promise<CustomerAddress> {
+  const result = await requestJson<{ address: CustomerAddress }>(
+    `/me/addresses/${encodeURIComponent(addressId)}`,
+    { method: 'PUT', body: input, authenticated: true },
+  )
+  return result.address
+}
+
+export async function deleteAddress(addressId: string): Promise<void> {
+  await requestJson<void>(`/me/addresses/${encodeURIComponent(addressId)}`, {
+    method: 'DELETE',
+    authenticated: true,
+  })
+}
+
+export async function getCheckoutQuote(addressId?: string): Promise<CheckoutQuote> {
+  const result = await requestJson<{ quote: CheckoutQuote }>('/checkout/quote', {
+    method: 'POST',
+    body: addressId ? { addressId } : {},
+    authenticated: true,
+  })
+  return result.quote
 }

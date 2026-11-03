@@ -170,6 +170,7 @@ function CartPage() {
                 <strong>{formatMoney(cart.subtotal.amount, cart.subtotal.currency)}</strong>
               </div>
               <p className="cart-summary-note">Shipping and taxes are calculated at checkout.</p>
+              <a className="button cart-checkout" href="/checkout">Review checkout</a>
               <a className="button cart-continue" href="/products">Continue shopping</a>
             </aside>
           </div>

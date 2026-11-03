@@ -5,6 +5,8 @@ import AuthPage from './pages/AuthPage'
 import SiteHeader from './components/SiteHeader'
 import { RequireAuth } from './auth/RequireAuth'
 import CartPage from './pages/CartPage'
+import AddressBookPage from './pages/AddressBookPage'
+import CheckoutPage from './pages/CheckoutPage'
 
 const copyrightYear = new Date().getFullYear()
 
@@ -24,6 +26,20 @@ function App() {
     return (
       <RequireAuth>
         <CartPage />
+      </RequireAuth>
+    )
+  }
+  if (pathSegments.length === 1 && pathSegments[0] === 'addresses') {
+    return (
+      <RequireAuth>
+        <AddressBookPage />
+      </RequireAuth>
+    )
+  }
+  if (pathSegments.length === 1 && pathSegments[0] === 'checkout') {
+    return (
+      <RequireAuth>
+        <CheckoutPage />
       </RequireAuth>
     )
   }
