@@ -214,6 +214,7 @@ package.json             Root npm workspace configuration
 ## Documentation
 
 - [API reference](docs/api-reference.md) — implemented endpoints, authentication, request shapes, and current limitations.
+- [Authentication and permissions guide](docs/auth-permissions.md) — session lifecycle, tokens and cookies, platform roles, vendor memberships, and route access.
 - [Local demo data guide](docs/demo-data.md) — create a demo vendor, product, inventory, and checkout quote using the API.
 - [Implemented workflows and statuses](docs/implemented-workflows.md) — current state transitions and the boundaries between shipped and planned behavior.
 - [Marketplace architecture and roadmap](docs/marketplace-architecture.md) — broader target design and delivery plan; not every workflow described there is implemented.
