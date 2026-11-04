@@ -211,6 +211,14 @@ docker-compose.yml       Local MongoDB replica set and Redis services
 package.json             Root npm workspace configuration
 ```
 
+## Documentation
+
+- [API reference](docs/api-reference.md) — implemented endpoints, authentication, request shapes, and current limitations.
+- [Local demo data guide](docs/demo-data.md) — create a demo vendor, product, inventory, and checkout quote using the API.
+- [Implemented workflows and statuses](docs/implemented-workflows.md) — current state transitions and the boundaries between shipped and planned behavior.
+- [Marketplace architecture and roadmap](docs/marketplace-architecture.md) — broader target design and delivery plan; not every workflow described there is implemented.
+- [Git index lock incident note](docs/git-index-lock-incident-2026-10-13.md) — repository maintenance incident record.
+
 ## Development notes
 
 - Start local dependencies with Docker Compose before relying on database-backed API features.
@@ -229,4 +237,4 @@ package.json             Root npm workspace configuration
 
 - Run backend unit tests from the repository root with `npm test` (or `npm test --workspace server`). They use Node's built-in test runner and cover route and schema behavior without requiring live MongoDB or Redis services.
 - The backend CI workflow checks JavaScript syntax, runs the tests, and checks formatting on pull requests that change backend files or root npm configuration.
-- See [`docs/marketplace-architecture.md`](docs/marketplace-architecture.md) for the data model, workflows, API design, and phased delivery plan.
+- See [Implemented workflows and statuses](docs/implemented-workflows.md) for current behavior and [Marketplace architecture and roadmap](docs/marketplace-architecture.md) for the broader design direction.

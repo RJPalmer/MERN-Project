@@ -1,5 +1,7 @@
 # Multi-Vendor B2B/B2C Marketplace — Architecture & Data Model
 
+> **Document scope:** This is a target architecture and phased roadmap, not a complete description of the running application. For shipped endpoints and current status transitions, see [Implemented Workflows and Statuses](implemented-workflows.md) and the [API Reference](api-reference.md). Checkout order placement, payment, and several B2B capabilities below are planned work.
+
 ## 1. Scope and principles
 
 This design supports a single marketplace where independent vendors sell physical goods to both consumers and business buyers. It is designed around these rules:
